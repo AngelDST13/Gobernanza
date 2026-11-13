@@ -1,0 +1,1540 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Gobernanza de IA y de datos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+/* Dirección: «tinta y papel». Una propuesta editorial con la estructura de un
+   expediente: cajetín, índice numerado, fichas con filete de tinta y un único
+   acento cobalto. Titulares en Plex Serif, texto en Plex Sans, datos y etiquetas
+   en Plex Mono. Movimiento solo de entrada y de datos; nada decorativo en bucle. */
+:root {
+  --paper: #F3F2EE;
+  --sheet: #FBFAF7;
+  --field: #FFFFFF;
+  --ink: #14161B;
+  --ink-2: #3B404A;
+  --muted: #5C6370;
+  --rule: #D6D3CA;
+  --acento: #2446D6;
+  --acento-suave: #E4E9FB;
+  --acento-fg: #FFFFFF;
+  --ok: #1E6B47;
+  --ok-suave: #E1F0E8;
+  --pend: #8A4F00;
+  --pend-suave: #F7EBD6;
+  --code-bg: #14161B;
+  --code-fg: #E8E6E0;
+  --sombra: 0 1px 0 rgb(20 22 27 / 0.04), 0 18px 40px -28px rgb(20 22 27 / 0.35);
+  --serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0C0D10;
+    --sheet: #13151A;
+    --field: #1A1D23;
+    --ink: #ECEAE4;
+    --ink-2: #C9CCD3;
+    --muted: #9AA0AB;
+    --rule: #2B2F37;
+    --acento: #9DB2FF;
+    --acento-suave: #1B2445;
+    --acento-fg: #0C0D10;
+    --ok: #7CCB9F;
+    --ok-suave: #15301F;
+    --pend: #E2A552;
+    --pend-suave: #33260F;
+    --code-bg: #07080A;
+    --code-fg: #E8E6E0;
+    --sombra: 0 1px 0 rgb(0 0 0 / 0.3), 0 18px 40px -28px rgb(0 0 0 / 0.8);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0C0D10;
+  --sheet: #13151A;
+  --field: #1A1D23;
+  --ink: #ECEAE4;
+  --ink-2: #C9CCD3;
+  --muted: #9AA0AB;
+  --rule: #2B2F37;
+  --acento: #9DB2FF;
+  --acento-suave: #1B2445;
+  --acento-fg: #0C0D10;
+  --ok: #7CCB9F;
+  --ok-suave: #15301F;
+  --pend: #E2A552;
+  --pend-suave: #33260F;
+  --code-bg: #07080A;
+  --code-fg: #E8E6E0;
+  --sombra: 0 1px 0 rgb(0 0 0 / 0.3), 0 18px 40px -28px rgb(0 0 0 / 0.8);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 var(--sans);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 56px;
+  min-width: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
+::selection { background: var(--acento-suave); }
+
+/* Cajetín ----------------------------------------------------------------- */
+.cabecera {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  background: color-mix(in srgb, var(--sheet) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 4px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
+}
+.cabecera-in { max-width: 1040px; margin: 0 auto; padding: 14px 0 0; }
+.cabecera-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  padding: 0 16px;
+}
+.marca {
+  font: 500 0.7rem/1.3 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+.marca strong { color: var(--ink); font-weight: 500; }
+.acciones-cabecera { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.progreso { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.progreso-texto {
+  font: 500 0.8rem var(--mono);
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.progreso-barra { width: 140px; height: 2px; background: var(--rule); position: relative; overflow: hidden; }
+.progreso-relleno {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--acento);
+  width: 0;
+  transition: width 600ms cubic-bezier(.2,.7,.2,1);
+}
+.tema {
+  font: 500 0.72rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  padding: 8px 12px;
+  min-height: 34px;
+  cursor: pointer;
+}
+.tema:hover { border-color: var(--ink); }
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  padding: 0 16px;
+  max-width: 1040px;
+  margin: 10px auto 0;
+  scrollbar-width: thin;
+}
+.tabs a {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 12px 14px 11px;
+  color: var(--muted);
+  text-decoration: none;
+  border-top: 3px solid transparent;
+  white-space: nowrap;
+  font-size: 0.92rem;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+.tabs a span { font: 500 0.72rem var(--mono); color: var(--muted); }
+.tabs a:hover { color: var(--ink); }
+.tabs a[aria-current="page"] { color: var(--ink); font-weight: 600; border-top-color: var(--acento); }
+.tabs a[aria-current="page"] span { color: var(--acento); }
+
+/* Hoja --------------------------------------------------------------------- */
+main {
+  max-width: 1040px;
+  margin: 28px auto 0;
+  padding: 0;
+  min-width: 0;
+}
+main > .vista { background: transparent; }
+
+/* Tipografía */
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1, .titular {
+  font: 500 clamp(2.1rem, 5.2vw, 3.6rem)/1.06 var(--serif);
+  letter-spacing: -0.02em;
+}
+h2 {
+  font: 500 clamp(1.5rem, 3vw, 2.1rem)/1.15 var(--serif);
+  letter-spacing: -0.015em;
+  margin: 0 0 10px;
+}
+h3 { font: 600 1.05rem/1.3 var(--sans); }
+p { margin: 0 0 14px; max-width: 66ch; overflow-wrap: anywhere; }
+.lead { font-size: 1.12rem; color: var(--ink-2); }
+.nota { color: var(--muted); font-size: 0.9rem; }
+.kicker {
+  font: 500 0.72rem/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--acento);
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kicker::before { content: ""; width: 22px; height: 1px; background: var(--acento); }
+
+/* Secciones de la propuesta ------------------------------------------------- */
+.seccion {
+  padding: 72px 0 8px;
+  border-top: 1px solid var(--rule);
+  margin-top: 48px;
+}
+.seccion-cabecera {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 36px;
+}
+@media (min-width: 860px) {
+  .seccion-cabecera { grid-template-columns: 5fr 7fr; gap: 48px; align-items: end; }
+}
+
+/* Portada ------------------------------------------------------------------- */
+.portada { padding: 56px 0 24px; position: relative; }
+.portada-grid {
+  display: grid;
+  gap: 40px;
+  align-items: center;
+}
+@media (min-width: 900px) { .portada-grid { grid-template-columns: 1.15fr 1fr; gap: 64px; } }
+.portada-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 22px 0 0;
+  font: 500 0.78rem var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.botones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: 500 0.82rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 14px 18px;
+  min-height: 46px;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-primario { background: var(--ink); color: var(--paper); }
+.btn-primario:hover { background: var(--acento); border-color: var(--acento); color: var(--acento-fg); }
+.btn-secundario:hover { border-color: var(--acento); color: var(--acento); }
+.btn .flecha { transition: transform 200ms ease; }
+.btn:hover .flecha { transform: translateX(3px); }
+
+/* Diagrama de la portada: las cuatro preguntas que se dibujan */
+.diagrama {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  box-shadow: var(--sombra);
+  padding: 26px;
+  position: relative;
+}
+.diagrama-titulo {
+  font: 500 0.7rem var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 18px;
+  display: flex;
+  justify-content: space-between;
+}
+.preguntas { list-style: none; margin: 0; padding: 0; position: relative; display: grid; gap: 10px; }
+.pregunta {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 14px 14px 0;
+  border-bottom: 1px solid var(--rule);
+  opacity: 1;
+  animation: entra 700ms cubic-bezier(.2,.7,.2,1) both;
+  animation-delay: calc(var(--i) * 120ms + 250ms);
+}
+.pregunta:last-child { border-bottom: 0; }
+.pregunta-num {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border: 1px solid var(--ink);
+  font: 500 0.85rem var(--mono);
+  transition: background 220ms ease, color 220ms ease;
+}
+.pregunta:hover .pregunta-num { background: var(--acento); border-color: var(--acento); color: var(--acento-fg); }
+.pregunta strong { display: block; font: 600 1rem var(--sans); }
+.pregunta span { color: var(--muted); font-size: 0.88rem; }
+.linea-vertical {
+  position: absolute;
+  left: 21px; top: 22px; bottom: 22px;
+  width: 1px;
+  background: var(--ink);
+  transform-origin: top;
+  animation: crece 1100ms cubic-bezier(.6,0,.2,1) 200ms both;
+}
+
+@keyframes entra {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes crece { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes rebote { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+/* Revelado al bajar: solo si el script corre; si no, todo es visible */
+.js [data-revelar] { opacity: 0; transform: translateY(18px); transition: opacity 700ms ease, transform 700ms cubic-bezier(.2,.7,.2,1); }
+.js [data-revelar].visible { opacity: 1; transform: none; }
+
+/* Cifras ---------------------------------------------------------------------- */
+.cifras { display: grid; gap: 0; grid-template-columns: 1fr; border-top: 1px solid var(--ink); }
+@media (min-width: 720px) { .cifras { grid-template-columns: repeat(3, 1fr); } }
+.cifra { padding: 22px 22px 22px 0; border-bottom: 1px solid var(--rule); }
+@media (min-width: 720px) { .cifra + .cifra { padding-left: 22px; border-left: 1px solid var(--rule); } }
+.cifra-num {
+  font: 500 clamp(2.2rem, 5vw, 3.2rem)/1 var(--serif);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.cifra-txt { color: var(--muted); font-size: 0.92rem; margin-top: 10px; max-width: 30ch; }
+.cifra-fuente { font: 0.7rem var(--mono); color: var(--muted); margin-top: 8px; letter-spacing: 0.02em; }
+
+/* Casos ----------------------------------------------------------------------- */
+.casos { display: grid; gap: 0; grid-template-columns: 1fr; }
+@media (min-width: 860px) { .casos { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
+.caso {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+}
+.caso:hover { border-color: var(--ink); transform: translateY(-3px); box-shadow: var(--sombra); }
+.caso-fecha { font: 500 0.72rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--acento); }
+.caso h3 { font: 600 1.08rem/1.3 var(--sans); }
+
+/* Tablas, sellos, listas ------------------------------------------------------ */
+.tabla-wrap { overflow-x: auto; border-top: 1px solid var(--ink); }
+table { width: 100%; border-collapse: collapse; font-size: 0.94rem; }
+th, td { text-align: left; padding: 14px 14px 14px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  font: 500 0.7rem var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+td.num { font: 500 0.85rem var(--mono); color: var(--acento); white-space: nowrap; }
+tr:hover td { background: color-mix(in srgb, var(--acento-suave) 40%, transparent); }
+td code, .ruta, code {
+  font: 500 0.82rem var(--mono);
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+.sello {
+  display: inline-block;
+  font: 500 0.7rem/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border: 3px double currentColor;
+  white-space: nowrap;
+}
+.sello-ok { color: var(--ok); }
+.sello-pend { color: var(--pend); }
+.sello-acento { color: var(--acento); }
+
+/* Dos columnas: fijo / libre, bot revisa / no revisa */
+.dos { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .dos { grid-template-columns: 1fr 1fr; gap: 28px; } }
+.columna { border-top: 2px solid var(--ink); padding-top: 16px; }
+.columna h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.columna ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.columna li {
+  padding-left: 22px;
+  position: relative;
+  color: var(--ink-2);
+  font-size: 0.96rem;
+}
+.columna li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.62em;
+  width: 10px; height: 1px;
+  background: var(--ink);
+}
+.columna-acento { border-top-color: var(--acento); }
+.columna-acento li::before { background: var(--acento); }
+
+/* Cronograma ------------------------------------------------------------------ */
+.cronograma { position: relative; display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.cronograma::before {
+  content: "";
+  position: absolute;
+  left: 92px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: var(--rule);
+}
+.cronograma-barra {
+  position: absolute;
+  left: 92px; top: 0; bottom: 0;
+  width: 1px;
+  background: var(--acento);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 1600ms cubic-bezier(.5,0,.2,1);
+}
+.cronograma.visible .cronograma-barra { transform: scaleY(1); }
+.cronograma li {
+  display: grid;
+  grid-template-columns: 74px 36px 1fr;
+  gap: 0 20px;
+  padding: 16px 0;
+  position: relative;
+  align-items: start;
+}
+.cronograma-hora { font: 500 0.88rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; padding-top: 3px; }
+.cronograma-punto {
+  width: 11px; height: 11px;
+  margin: 6px 0 0 -5px;
+  background: var(--sheet);
+  border: 1.5px solid var(--acento);
+  border-radius: 50%;
+  position: relative;
+  z-index: 1;
+  justify-self: start;
+  transition: background 300ms ease;
+}
+.cronograma li:hover .cronograma-punto { background: var(--acento); }
+.cronograma-txt strong { font: 600 1rem var(--sans); display: block; }
+.cronograma-txt span { color: var(--muted); font-size: 0.9rem; }
+.cronograma-txt .archivo { font: 500 0.78rem var(--mono); color: var(--acento); display: inline-block; margin-top: 6px; }
+
+/* Checklist en vivo */
+.checklist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
+.checklist li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.checklist li span:first-child { font-size: 0.96rem; }
+
+/* Gobernanza en el código: tabla de fallos y reglas */
+.fallos td:first-child { font-family: var(--serif); font-size: 1.02rem; }
+
+/* Pie */
+.pie { margin-top: 64px; padding-top: 22px; border-top: 1px solid var(--ink); }
+.pie-grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 720px) { .pie-grid { grid-template-columns: 2fr 1fr; } }
+
+/* Espacio de trabajo (la actividad) -------------------------------------------- */
+.hoja { background: var(--sheet); border: 1px solid var(--rule); padding: 28px 24px; box-shadow: var(--sombra); }
+.vista { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.vista > div:first-child { border-bottom: 1px solid var(--rule); padding-bottom: 16px; }
+.tarjeta {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--ink);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.tarjeta-cabecera { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; padding-bottom: 10px; border-bottom: 1px dotted var(--rule); }
+.rejilla { display: grid; gap: 14px 18px; grid-template-columns: 1fr; min-width: 0; }
+@media (min-width: 640px) { .rejilla { grid-template-columns: 1fr 1fr; } }
+.rejilla-3 { display: grid; gap: 14px 18px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .rejilla-3 { grid-template-columns: 1fr 1fr 1fr; } }
+.campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.campo-titulo { font: 500 0.72rem/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.ayuda { color: var(--muted); font-size: 0.84rem; }
+input, textarea, select {
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--field);
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  border-radius: 0;
+  padding: 8px 6px;
+  min-height: 40px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--acento); outline-offset: 0; background: var(--acento-suave); }
+textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
+input[type="checkbox"] { width: 18px; min-height: 18px; accent-color: var(--acento); }
+button.accion {
+  font: 500 0.78rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--ink);
+  padding: 11px 16px;
+  min-height: 40px;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+button.accion:hover { border-color: var(--acento); color: var(--acento); }
+button.accion:disabled { opacity: 0.5; cursor: not-allowed; }
+.boton { background: var(--ink); color: var(--paper); }
+.boton:hover { background: var(--acento); border-color: var(--acento); color: var(--acento-fg); }
+.boton-sec { border: 0; border-bottom: 1px solid var(--ink); padding: 6px 0; min-height: 34px; }
+.boton-peligro { color: var(--pend); border-bottom-color: var(--pend); }
+.acciones { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.lista-editor { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.fila-lista { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; min-width: 0; }
+.fila-lista input { min-width: 0; }
+.pill {
+  display: inline-block;
+  font: 500 0.7rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 9px;
+  border: 3px double currentColor;
+  white-space: nowrap;
+}
+.pill-ok { color: var(--ok); }
+.pill-pend { color: var(--pend); }
+.tabla-wrap.tablas { border-top: 0; }
+ul.errores { margin: 0; padding-left: 18px; }
+ul.errores li { margin-bottom: 6px; overflow-wrap: anywhere; }
+.bloque { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.bloque-cabecera { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.ruta { font: 500 0.85rem var(--mono); color: var(--acento); overflow-wrap: anywhere; }
+pre {
+  margin: 0;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 16px;
+  overflow-x: auto;
+  max-height: 340px;
+  font: 0.83rem/1.55 var(--mono);
+  white-space: pre;
+}
+.inicio-pasos { display: none; }
+
+/* Movimiento reducido: sin animaciones ni transiciones */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+  .js [data-revelar] { opacity: 1; transform: none; }
+}
+.diagrama-lista { position: relative; }
+.cronograma-lista { list-style: none; margin: 0; padding: 0; }
+.cronograma { position: relative; }
+.propuesta { min-width: 0; }
+.caso-fecha + h3 { margin-top: 0; }
+.cifras .cifra-num { min-height: 1em; }
+.casos { margin-top: 8px; }
+@media (max-width: 520px) {
+  .portada { padding-top: 36px; }
+  .cronograma::before, .cronograma-barra { left: 16px; }
+  .cronograma li { grid-template-columns: 1fr; gap: 6px; padding-left: 40px; }
+  .cronograma-punto { position: absolute; left: 11px; top: 18px; margin: 0; }
+  .cronograma-hora { order: -1; }
+}
+</style>
+
+<header class="cabecera">
+  <div class="cabecera-in">
+    <div class="cabecera-fila">
+      <p class="marca"><strong>Gobernanza de IA y de datos</strong> · Taller FWD</p>
+      <div class="acciones-cabecera">
+        <div class="progreso" aria-live="polite">
+          <span class="progreso-texto" id="progreso-texto">0 de 9</span>
+          <div class="progreso-barra" aria-hidden="true"><div class="progreso-relleno" id="progreso-relleno"></div></div>
+        </div>
+        <button type="button" class="tema" id="tema" aria-label="Cambiar tema">Tema: sistema</button>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="Secciones">
+      <a href="#inicio" data-ruta="inicio"><span>00</span>Propuesta</a>
+      <a href="#inventario" data-ruta="inventario"><span>01</span>Inventario</a>
+      <a href="#adrs" data-ruta="adrs"><span>02</span>ADRs</a>
+      <a href="#riesgos" data-ruta="riesgos"><span>03</span>Riesgos</a>
+      <a href="#agentes" data-ruta="agentes"><span>04</span>AGENTS.md</a>
+      <a href="#revision" data-ruta="revision"><span>05</span>Revisión y copia</a>
+    </nav>
+  </div>
+</header>
+
+<main id="principal" tabindex="-1"></main>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- Constantes del pack (las mismas reglas que el bot) ----------
+  const KEY = 'governance-pack-espacio-v1';
+  const CATEGORIAS = ['Sensible', 'Acceso restringido', 'Acceso irrestricto', 'Crediticio'];
+  const ADR = [
+    { id: '0001', slug: 'modelo-y-proveedor-de-ia', tema: 'Modelo y proveedor de IA' },
+    { id: '0002', slug: 'que-decide-la-ia', tema: 'Qué decide la IA y qué decide una persona' },
+    { id: '0003', slug: 'donde-viven-los-datos', tema: 'Dónde viven los datos' },
+  ];
+  const SECCIONES = [
+    ['contexto', 'Contexto'],
+    ['decision', 'Decisión'],
+    ['consecuencias', 'Consecuencias'],
+    ['verificacion', 'Cómo se verifica'],
+  ];
+  const MARCADOR = /<(?!\/?(?:br|details|summary|sub|sup|img|a|kbd|b|i|code|p)\b)[^<>\n]{2,}>/i;
+  const RUTAS = ['inicio', 'inventario', 'adrs', 'riesgos', 'agentes', 'revision'];
+
+  // ---------- Estado ----------
+  const filaInventario = () => ({ dato: '', personal: 'No', categoria: 'No aplica', origen: '', almacen: '', tercero: '', plazo: '', quien: '' });
+  const filaRiesgo = () => ({ riesgo: '', afectados: '', prob: 'M', impacto: 'M', mitigacion: '', estado: 'Pendiente', responsable: '' });
+  const adrVacio = () => ({ titulo: '', estado: 'Propuesto', fecha: '', decide: '', contexto: '', decision: '', alternativas: [''], consecuencias: '', verificacion: '' });
+
+  const estadoVacio = () => ({
+    proyecto: '',
+    inventario: [],
+    noRecolectamos: [''],
+    adrs: Object.fromEntries(ADR.map((a) => [a.id, adrVacio()])),
+    riesgos: [filaRiesgo(), filaRiesgo(), filaRiesgo()],
+    reglas: [''],
+    manual: { revisado: false, bot: false },
+  });
+
+  const cargar = () => {
+    try {
+      const guardado = JSON.parse(localStorage.getItem(KEY));
+      if (guardado && typeof guardado === 'object') {
+        const base = estadoVacio();
+        return {
+          ...base,
+          ...guardado,
+          adrs: { ...base.adrs, ...(guardado.adrs ?? {}) },
+          manual: { ...base.manual, ...(guardado.manual ?? {}) },
+        };
+      }
+    } catch {
+      // Sin almacenamiento disponible: se trabaja solo en la sesión actual.
+    }
+    return estadoVacio();
+  };
+
+  let state = cargar();
+
+  const guardar = () => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(state));
+    } catch {
+      // Sin almacenamiento: el trabajo se mantiene mientras la pestaña esté abierta.
+    }
+    actualizarProgreso();
+  };
+
+  // ---------- Utilidades de DOM (todo texto entra con textContent) ----------
+  const h = (tag, attrs = {}, ...hijos) => {
+    const el = document.createElement(tag);
+    for (const [clave, valor] of Object.entries(attrs)) {
+      if (valor === undefined || valor === null || valor === false) continue;
+      if (clave === 'class') el.className = valor;
+      else if (clave.startsWith('on')) el.addEventListener(clave.slice(2), valor);
+      else if (clave in el) el[clave] = valor;
+      else el.setAttribute(clave, valor === true ? '' : String(valor));
+    }
+    el.append(...hijos.flat().filter((x) => x !== null && x !== undefined && x !== false)
+      .map((x) => (x instanceof Node ? x : document.createTextNode(String(x)))));
+    return el;
+  };
+
+  const campo = (texto, control, ayuda) =>
+    h('label', { class: 'campo' }, [
+      h('span', { class: 'campo-titulo' }, texto),
+      control,
+      ayuda ? h('span', { class: 'ayuda' }, ayuda) : null,
+    ]);
+
+  const entrada = (valor, alCambiar, extra = {}) =>
+    h('input', { ...extra, value: valor ?? '', oninput: (e) => { alCambiar(e.target.value); guardar(); } });
+
+  const area = (valor, alCambiar, extra = {}) =>
+    h('textarea', { rows: 3, ...extra, value: valor ?? '', oninput: (e) => { alCambiar(e.target.value); guardar(); } });
+
+  const selector = (opciones, valor, alCambiar) =>
+    h('select', {
+      onchange: (e) => { alCambiar(e.target.value); guardar(); },
+    }, opciones.map((o) => h('option', { value: o, selected: o === valor }, o)));
+
+  // Lista editable de textos. `rerender` redibuja la vista al agregar o quitar.
+  const editorLista = (lista, { etiqueta, ayuda, rerender }) =>
+    h('div', { class: 'lista-editor' }, [
+      ayuda ? h('span', { class: 'ayuda' }, ayuda) : null,
+      ...lista.map((valor, i) => h('div', { class: 'fila-lista' }, [
+        h('input', {
+          value: valor,
+          'aria-label': `${etiqueta} ${i + 1}`,
+          oninput: (e) => { lista[i] = e.target.value; guardar(); },
+        }),
+        h('button', {
+          type: 'button',
+          class: 'boton-sec',
+          onclick: () => {
+            if (lista.length > 1) lista.splice(i, 1);
+            else lista[0] = '';
+            guardar();
+            rerender();
+          },
+        }, 'Quitar'),
+      ])),
+      h('div', {}, h('button', {
+        type: 'button',
+        class: 'boton-sec',
+        onclick: () => { lista.push(''); guardar(); rerender(); },
+      }, `Agregar ${etiqueta.toLowerCase()}`)),
+    ]);
+
+  // ---------- Validación (mismas reglas que verificar-pack.mjs) ----------
+  const largo = (texto) => (texto ?? '').trim().length >= 20;
+  const esFecha = (f) => /^\d{4}-\d{2}-\d{2}$/.test(f ?? '') && !Number.isNaN(Date.parse(`${f}T00:00:00Z`));
+  const esBMA = (v) => ['B', 'M', 'A'].includes(v);
+  const textosDe = (valor, acc = []) => {
+    if (typeof valor === 'string') acc.push(valor);
+    else if (valor && typeof valor === 'object') Object.values(valor).forEach((v) => textosDe(v, acc));
+    return acc;
+  };
+
+  function revisar(s) {
+    const pasos = [];
+
+    // 1. Inventario: al menos dos filas completas; los personales con categoría válida.
+    const errInv = [];
+    s.inventario.forEach((f, i) => {
+      const faltan = ['dato', 'origen', 'almacen', 'tercero', 'plazo', 'quien'].filter((k) => !(f[k] ?? '').trim());
+      if (faltan.length) errInv.push(`Dato ${i + 1}: faltan ${faltan.join(', ')}.`);
+      if (f.personal === 'Sí' && !CATEGORIAS.includes(f.categoria)) {
+        errInv.push(`Dato ${i + 1}: si es personal, la categoría debe ser una de la Ley 8968.`);
+      }
+    });
+    if (s.inventario.length < 2) errInv.unshift(`Hay ${s.inventario.length} dato(s); se piden al menos 2.`);
+    pasos.push({
+      texto: 'El inventario tiene al menos dos datos completos, con categoría de la Ley 8968 si son personales',
+      ok: errInv.length === 0,
+      detalle: errInv,
+    });
+
+    // 2. Lo que NO recolectamos.
+    const noRec = s.noRecolectamos.some((t) => t.trim());
+    pasos.push({
+      texto: 'El inventario incluye «Lo que NO recolectamos» con al menos un dato',
+      ok: noRec,
+      detalle: noRec ? [] : ['Escribe al menos un dato que decidiste no pedir.'],
+    });
+
+    // 3. Tres ADRs completos.
+    const errAdr = [];
+    for (const a of ADR) {
+      const d = s.adrs[a.id];
+      const p = [];
+      if (!d.titulo.trim()) p.push('falta el título');
+      if (!/^(propuesto|aceptado|reemplazado)/i.test(d.estado)) p.push('el estado no es válido');
+      if (!esFecha(d.fecha)) p.push('la fecha debe ser AAAA-MM-DD');
+      if (!d.decide.trim()) p.push('falta quién decide');
+      for (const [clave, nombre] of SECCIONES) {
+        if (!largo(d[clave])) p.push(`«${nombre}» tiene menos de 20 caracteres`);
+      }
+      if (!d.alternativas.some((t) => t.trim())) p.push('falta una alternativa descartada');
+      if (p.length) errAdr.push(`ADR-${a.id}: ${p.join('; ')}.`);
+    }
+    pasos.push({
+      texto: 'Tres ADRs con estado, fecha, quién decide y sus secciones',
+      ok: errAdr.length === 0,
+      detalle: errAdr,
+    });
+
+    // 4. ADR 0002: frases sobre lo que la IA nunca decide.
+    const ok0002 = largo(s.adrs['0002'].decision);
+    pasos.push({
+      texto: 'El ADR 0002 dice en frases verificables qué nunca decide la IA',
+      ok: ok0002,
+      detalle: ok0002 ? [] : ['En Decisión del ADR-0002, escribe qué nunca decide la IA.'],
+    });
+
+    // 5. Alternativas y verificación en cada ADR.
+    const sinAltVer = ADR.filter((a) => {
+      const d = s.adrs[a.id];
+      return !d.alternativas.some((t) => t.trim()) || !largo(d.verificacion);
+    }).map((a) => `ADR-${a.id}`);
+    pasos.push({
+      texto: 'Cada ADR tiene una alternativa descartada y «Cómo se verifica»',
+      ok: sinAltVer.length === 0,
+      detalle: sinAltVer.length ? [`Falta alternativa o verificación en ${sinAltVer.join(', ')}.`] : [],
+    });
+
+    // 6. Riesgos completos.
+    const riesgosOk = s.riesgos.filter((r) =>
+      r.riesgo.trim() && r.afectados.trim() && r.mitigacion.trim() && r.responsable.trim() && esBMA(r.prob) && esBMA(r.impacto));
+    pasos.push({
+      texto: 'Al menos tres riesgos con afectados, mitigación, responsable y probabilidad e impacto B, M o A',
+      ok: riesgosOk.length >= 3,
+      detalle: riesgosOk.length >= 3 ? [] : [`Hay ${riesgosOk.length} riesgo(s) completo(s); se piden 3.`],
+    });
+
+    // 7. AGENTS.md: al menos cinco reglas propias.
+    const reglas = s.reglas.filter((t) => t.trim()).length;
+    pasos.push({
+      texto: 'AGENTS.md tiene al menos cinco reglas propias del proyecto',
+      ok: reglas >= 5,
+      detalle: reglas >= 5 ? [] : [`Hay ${reglas} regla(s); se piden 5.`],
+    });
+
+    // 8 y 9: se confirman a mano.
+    pasos.push({
+      texto: 'Nada de lo escrito contradice lo que el código hace hoy',
+      ok: s.manual.revisado,
+      manual: true,
+      detalle: s.manual.revisado ? [] : ['Revisa cada frase de los ADRs contra tu código y marca el punto.'],
+    });
+    pasos.push({
+      texto: 'El bot de verificación comentó «la forma del pack está completa»',
+      ok: s.manual.bot,
+      manual: true,
+      detalle: s.manual.bot ? [] : ['Abre el PR, espera el comentario del bot y marca el punto.'],
+    });
+
+    const marcadores = textosDe(s).filter((t) => MARCADOR.test(t));
+    return { pasos, marcadores };
+  }
+
+  // ---------- Markdown de cada archivo (formato que valida el bot) ----------
+  const celda = (v) => String(v ?? '').replace(/\|/g, '/').replace(/\s*\n\s*/g, ' ').trim();
+  const bloque = (v) => String(v ?? '').trim();
+  const bullets = (lista) => lista.filter((t) => t.trim()).map((t) => `- ${t.trim().replace(/\s*\n\s*/g, ' ')}`).join('\n');
+
+  const MD = {
+    inventario(s) {
+      const filas = s.inventario.map((f) =>
+        `| ${[f.dato, f.personal, f.categoria, f.origen, f.almacen, f.tercero, f.plazo, f.quien].map(celda).join(' | ')} |`);
+      return [
+        '# Inventario de datos',
+        '',
+        'No se puede gobernar lo que no se sabe que se tiene. Una fila por cada dato que el sistema guarda, recibe o envía a un tercero, incluido el proveedor del modelo de IA.',
+        '',
+        '| Dato | ¿Personal? | Categoría (Ley 8968, art. 9) | De dónde viene | Dónde se guarda | ¿Sale a un tercero? ¿A quién? | Cuánto se conserva | Quién puede verlo |',
+        '| --- | --- | --- | --- | --- | --- | --- | --- |',
+        ...filas,
+        '',
+        '## Lo que NO recolectamos',
+        '',
+        bullets(s.noRecolectamos),
+        '',
+      ].join('\n');
+    },
+    adr(s, a) {
+      const d = s.adrs[a.id];
+      return [
+        `# ADR-${a.id}: ${bloque(d.titulo)}`,
+        '',
+        `- Estado: ${bloque(d.estado)}`,
+        `- Fecha: ${bloque(d.fecha)}`,
+        `- Decide: ${bloque(d.decide)}`,
+        '',
+        '## Contexto',
+        '',
+        bloque(d.contexto),
+        '',
+        '## Decisión',
+        '',
+        bloque(d.decision),
+        '',
+        '## Alternativas descartadas',
+        '',
+        bullets(d.alternativas),
+        '',
+        '## Consecuencias',
+        '',
+        bloque(d.consecuencias),
+        '',
+        '## Cómo se verifica',
+        '',
+        bloque(d.verificacion),
+        '',
+      ].join('\n');
+    },
+    riesgos(s) {
+      const filas = s.riesgos.map((r, i) =>
+        `| R${i + 1} | ${[r.riesgo, r.afectados, r.prob, r.impacto, r.mitigacion, r.estado, r.responsable].map(celda).join(' | ')} |`);
+      return [
+        '# Registro de riesgos',
+        '',
+        'Al menos tres riesgos, cada uno con quién sale afectado y una mitigación.',
+        '',
+        '| # | Riesgo | Quién sale afectado | Probabilidad (B/M/A) | Impacto (B/M/A) | Mitigación | Estado | Responsable |',
+        '| --- | --- | --- | --- | --- | --- | --- | --- |',
+        ...filas,
+        '',
+      ].join('\n');
+    },
+    agentes(s) {
+      return [
+        `# AGENTS.md · ${bloque(s.proyecto) || 'Proyecto'}`,
+        '',
+        'Reglas que cualquier agente de código debe leer antes de tocar este repositorio.',
+        '',
+        '## Antes de escribir código',
+        '',
+        '- Leer `docs/adr/` y `docs/gobernanza/`. Si un cambio contradice un ADR aceptado, no se hace: se propone un ADR nuevo.',
+        '',
+        '## Reglas propias de este proyecto',
+        '',
+        bullets(s.reglas),
+        '',
+      ].join('\n');
+    },
+  };
+
+  const ARCHIVOS = () => [
+    { ruta: 'docs/gobernanza/inventario-de-datos.md', texto: MD.inventario(state) },
+    ...ADR.map((a) => ({ ruta: `docs/adr/${a.id}-${a.slug}.md`, texto: MD.adr(state, a) })),
+    { ruta: 'docs/gobernanza/registro-de-riesgos.md', texto: MD.riesgos(state) },
+    { ruta: 'AGENTS.md', texto: MD.agentes(state) },
+  ];
+
+  // ---------- Progreso (cabecera) ----------
+  function actualizarProgreso() {
+    const { pasos } = revisar(state);
+    const listos = pasos.filter((p) => p.ok).length;
+    document.getElementById('progreso-relleno').style.width = `${Math.round((listos / pasos.length) * 100)}%`;
+    document.getElementById('progreso-texto').textContent = `${listos} de ${pasos.length}`;
+  }
+
+  // ---------- Vistas ----------
+  const render = () => {
+    const ruta = (location.hash.replace('#', '') || 'inicio');
+    const activa = RUTAS.includes(ruta) ? ruta : 'inicio';
+    document.querySelectorAll('.tabs a').forEach((a) => {
+      if (a.dataset.ruta === activa) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    const vista = { inicio, inventario, adrs, riesgos, agentes, revision }[activa]();
+    document.getElementById('principal').replaceChildren(vista);
+    actualizarProgreso();
+  };
+
+  // ---------- Tema claro / oscuro / sistema ----------
+  const TEMA_KEY = 'gobernanza.tema';
+  const TEMAS = ['sistema', 'claro', 'oscuro'];
+  const aplicarTema = (tema) => {
+    if (tema === 'sistema') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', tema === 'claro' ? 'light' : 'dark');
+    const boton = document.getElementById('tema');
+    if (boton) boton.textContent = `Tema: ${tema}`;
+  };
+  let temaActual = 'sistema';
+  try { temaActual = localStorage.getItem(TEMA_KEY) || 'sistema'; } catch { /* sin almacenamiento */ }
+  if (!TEMAS.includes(temaActual)) temaActual = 'sistema';
+  aplicarTema(temaActual);
+  document.getElementById('tema').addEventListener('click', () => {
+    temaActual = TEMAS[(TEMAS.indexOf(temaActual) + 1) % TEMAS.length];
+    aplicarTema(temaActual);
+    try { localStorage.setItem(TEMA_KEY, temaActual); } catch { /* sin almacenamiento */ }
+  });
+
+  // Activa el revelado al bajar. Sin JavaScript, todo el contenido ya es visible.
+  document.documentElement.classList.add('js');
+
+  // ---------- Animaciones de la propuesta ----------
+  const contar = (el) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const final = Number(el.dataset.contar);
+    const prefijo = el.dataset.prefijo ?? '';
+    const sufijo = el.dataset.sufijo ?? '';
+    const inicio = performance.now();
+    const paso = (ahora) => {
+      const avance = Math.min(1, (ahora - inicio) / 1400);
+      const suave = 1 - (1 - avance) ** 3;
+      el.textContent = `${prefijo}${Math.round(final * suave).toLocaleString('es')}${sufijo}`;
+      if (avance < 1) requestAnimationFrame(paso);
+    };
+    el.textContent = `${prefijo}0${sufijo}`;
+    requestAnimationFrame(paso);
+  };
+
+  const iniciarEfectos = () => {
+    const bloques = document.querySelectorAll('[data-revelar]');
+    const mostrar = (el) => {
+      el.classList.add('visible');
+      el.querySelectorAll('[data-contar]').forEach(contar);
+    };
+    if (!('IntersectionObserver' in window)) {
+      bloques.forEach(mostrar);
+      return;
+    }
+    const observador = new IntersectionObserver((entradas) => {
+      entradas.forEach((entrada) => {
+        if (!entrada.isIntersecting) return;
+        mostrar(entrada.target);
+        observador.unobserve(entrada.target);
+      });
+    }, { threshold: 0.12 });
+    bloques.forEach((el) => observador.observe(el));
+    // Red de seguridad: si el observador no dispara, el contenido aparece igual.
+    setTimeout(() => bloques.forEach(mostrar), 4000);
+  };
+
+  // ---------- Piezas de la propuesta ----------
+  const seccion = (id, numero, titulo, intro, ...contenido) =>
+    h('section', { class: 'seccion', id, 'data-revelar': true }, [
+      h('div', { class: 'seccion-cabecera' }, [
+        h('div', {}, [h('p', { class: 'kicker' }, numero), h('h2', {}, titulo)]),
+        intro ? h('p', { class: 'lead' }, intro) : null,
+      ]),
+      ...contenido,
+    ]);
+
+  const cifra = ({ numero, prefijo = '', sufijo = '', texto, fuente }) =>
+    h('div', { class: 'cifra' }, [
+      h('div', {
+        class: 'cifra-num',
+        'data-contar': numero,
+        'data-prefijo': prefijo,
+        'data-sufijo': sufijo,
+      }, `${prefijo}${numero.toLocaleString('es')}${sufijo}`),
+      h('p', { class: 'cifra-txt' }, texto),
+      h('p', { class: 'cifra-fuente' }, fuente),
+    ]);
+
+  const diagrama = () => {
+    const preguntas = [
+      ['¿Quién decide?', 'Qué decisiones toma la IA y cuáles quedan en manos de una persona.'],
+      ['¿Con qué datos?', 'Qué se recolecta, qué no, a dónde viaja y cuánto se guarda.'],
+      ['¿Quién responde?', 'Una persona con nombre, no «el sistema» ni «el modelo».'],
+      ['¿Cómo se corrige?', 'Qué pasa cuando falla y cómo reclama la persona afectada.'],
+    ];
+    const items = preguntas.map(([titulo, texto], i) => {
+      const li = h('li', { class: 'pregunta' }, [
+        h('span', { class: 'pregunta-num' }, String(i + 1).padStart(2, '0')),
+        h('div', {}, [h('strong', {}, titulo), h('span', {}, texto)]),
+      ]);
+      li.style.setProperty('--i', String(i));
+      return li;
+    });
+    return h('div', { class: 'diagrama' }, [
+      h('p', { class: 'diagrama-titulo' }, [h('span', {}, 'Definición de trabajo'), h('span', {}, '4 preguntas')]),
+      h('div', { class: 'diagrama-lista' }, [
+        h('span', { class: 'linea-vertical', 'aria-hidden': 'true' }),
+        h('ol', { class: 'preguntas' }, items),
+      ]),
+    ]);
+  };
+
+  const checklistEnVivo = () => {
+    const { pasos } = revisar(state);
+    const textos = [
+      'Inventario con al menos dos datos completos y categorías de la Ley 8968',
+      'Lo que NO recolectamos, con al menos un dato',
+      'Tres ADRs con estado, fecha, quién decide y sus secciones',
+      'El ADR 0002 dice en frases verificables qué nunca decide la IA',
+      'Cada ADR tiene alternativa descartada y «Cómo se verifica»',
+      'Al menos tres riesgos con afectados, mitigación y responsable',
+      'AGENTS.md tiene al menos cinco reglas propias',
+      'Nada contradice lo que el código hace hoy',
+      'El bot comentó «la forma del pack está completa»',
+    ];
+    return h('ol', { class: 'checklist' }, pasos.map((p, i) => h('li', {}, [
+      h('span', {}, textos[i]),
+      h('span', { class: p.ok ? 'sello sello-ok' : 'sello sello-pend' }, p.ok ? 'Listo' : 'Pendiente'),
+    ])));
+  };
+
+  function inicio() {
+    const { pasos } = revisar(state);
+    const listos = pasos.filter((p) => p.ok).length;
+    const irAlReto = (e) => {
+      e.preventDefault();
+      document.getElementById('reto')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    const portada = h('header', { class: 'portada' }, [
+      h('div', { class: 'portada-grid' }, [
+        h('div', {}, [
+          h('p', { class: 'kicker' }, 'Taller · 13 de noviembre de 2026'),
+          h('h1', { class: 'titular' }, 'Decidir antes de que decida el sistema.'),
+          h('p', { class: 'lead' }, 'Gobernanza de IA y de datos: teoría crítica y práctica en proyectos reales. Hoy armas un Governance Pack para tu proyecto final, en tu propio repositorio.'),
+          h('div', { class: 'portada-meta' }, [
+            h('span', {}, 'Gustavo Machado Loría'),
+            h('span', {}, 'Business Solutions · Fundación Forward Costa Rica'),
+            h('span', {}, 'Reto · 9:45 a 12:00'),
+          ]),
+          h('div', { class: 'botones' }, [
+            h('a', { class: 'btn btn-primario', href: '#inventario' }, [
+              'Empezar la actividad',
+              h('span', { class: 'flecha', 'aria-hidden': 'true' }, '→'),
+            ]),
+            h('a', { class: 'btn btn-secundario', href: '#reto', onclick: irAlReto }, 'Ver el reto'),
+          ]),
+        ]),
+        diagrama(),
+      ]),
+    ]);
+
+    const puntoDePartida = seccion('punto-de-partida', '01 · Punto de partida', 'Lo que sale mal cuando nadie decidió por escrito',
+      'Son casos reales. Cada uno tiene una decisión que nadie dejó escrita y alguien tuvo que explicar después.',
+      h('div', { class: 'cifras' }, [
+        cifra({ numero: 12692, texto: 'niñas y adolescentes de 10 a 19 años en una encuesta a barrios pobres. El sistema de Salta «predecía» embarazos.', fuente: 'Salta, Argentina · 2017–2019' }),
+        cifra({ numero: 400, prefijo: '+', sufijo: ' millones', texto: 'registros de residentes ofrecidos en la dark web por US$2.500, con salarios, teléfonos y direcciones.', fuente: 'Costa Rica · octubre de 2026' }),
+        h('div', { class: 'cifra' }, [
+          h('div', { class: 'cifra-num' }, 'Enero de 2021'),
+          h('p', { class: 'cifra-txt' }, 'Renuncia en pleno el gabinete de Mark Rutte. Un algoritmo de subsidios marcaba familias como fraude por su nacionalidad.'),
+          h('p', { class: 'cifra-fuente' }, 'Países Bajos · 2013–2021'),
+        ]),
+      ]),
+      h('div', { class: 'casos', style: '' }, [
+        h('article', { class: 'caso' }, [
+          h('span', { class: 'caso-fecha' }, 'Junio de 2026 · sigue en curso'),
+          h('h3', {}, 'Mobley contra Workday'),
+          h('p', { class: 'nota' }, 'Un filtro de contratación con IA descartaba postulantes por edad. Una jueza certificó una acción colectiva para personas de 40 años o más.'),
+        ]),
+        h('article', { class: 'caso' }, [
+          h('span', { class: 'caso-fecha' }, 'Febrero de 2024'),
+          h('h3', {}, 'Moffatt contra Air Canada'),
+          h('p', { class: 'nota' }, 'El chatbot inventó una política de descuento. El tribunal obligó a la aerolínea a cumplirla: la empresa responde por lo que dice su sitio.'),
+        ]),
+        h('article', { class: 'caso' }, [
+          h('span', { class: 'caso-fecha' }, 'Julio de 2025'),
+          h('h3', {}, 'Replit borra una base de datos'),
+          h('p', { class: 'nota' }, 'Durante una congelación de código, un agente borró la base de un usuario. La respuesta fue separar desarrollo y producción.'),
+        ]),
+      ]),
+    );
+
+    const preguntasDelPack = seccion('preguntas', '02 · La definición de trabajo', 'Gobernar es poder contestar cuatro preguntas, por escrito',
+      'Cada pregunta tiene un archivo que la responde. Si un archivo no responde una pregunta, el pack queda incompleto.',
+      h('div', { class: 'tabla-wrap' }, h('table', {}, [
+        h('thead', {}, h('tr', {}, [h('th', {}, 'Pregunta'), h('th', {}, 'Archivo que la contesta')])),
+        h('tbody', {}, [
+          h('tr', {}, [h('td', {}, '¿Quién decide: la IA o una persona?'), h('td', { class: 'ruta' }, 'docs/adr/0002-que-decide-la-ia.md')]),
+          h('tr', {}, [h('td', {}, '¿Con qué datos trabaja el sistema?'), h('td', { class: 'ruta' }, 'docs/gobernanza/inventario-de-datos.md · docs/adr/0003-donde-viven-los-datos.md')]),
+          h('tr', {}, [h('td', {}, '¿Quién responde por cada decisión?'), h('td', {}, 'El campo Decide de cada ADR y la columna Responsable del registro')]),
+          h('tr', {}, [h('td', {}, '¿Cómo se corrige cuando algo falla?'), h('td', { class: 'ruta' }, 'docs/gobernanza/registro-de-riesgos.md')]),
+        ]),
+      ])),
+    );
+
+    const entregables = seccion('entregables', '03 · Lo que entregas', 'Seis archivos en tu repositorio',
+      'Más el modelo de IA, que documenta el ADR 0001. Todo en la rama docs/governance-pack, con un único PR hacia main.',
+      h('div', { class: 'tabla-wrap' }, h('table', {}, [
+        h('thead', {}, h('tr', {}, [h('th', {}, 'Archivo'), h('th', {}, 'Qué responde')])),
+        h('tbody', {}, [
+          h('tr', {}, [h('td', { class: 'ruta' }, 'AGENTS.md'), h('td', {}, 'Reglas que leen los agentes de código antes de tocar tu repo.')]),
+          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/adr/0001-modelo-y-proveedor-de-ia.md'), h('td', {}, 'Modelo, proveedor, criterios y alternativas descartadas.')]),
+          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/adr/0002-que-decide-la-ia.md'), h('td', {}, 'Qué decide la IA y qué decide una persona. El más importante.')]),
+          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/adr/0003-donde-viven-los-datos.md'), h('td', {}, 'Bases, tránsito, hosting, webhooks y controles de seguridad.')]),
+          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/gobernanza/inventario-de-datos.md'), h('td', {}, 'Cada dato que captura, procesa o guarda, con su categoría.')]),
+          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/gobernanza/registro-de-riesgos.md'), h('td', {}, 'Riesgos con severidad, probabilidad, afectados y responsable.')]),
+        ]),
+      ])),
+    );
+
+    const cronograma = seccion('cronograma', '04 · Cronograma', 'Cuatro horas que se convierten en un PR',
+      'Si te atrasas, prioriza el inventario, el ADR 0002 y el registro de riesgos. Son los tres que más importan.',
+      h('div', { class: 'cronograma', 'data-revelar': true }, [
+        h('span', { class: 'cronograma-barra', 'aria-hidden': 'true' }),
+        h('ol', { class: 'cronograma-lista' }, [
+          ['9:45 – 10:00', 'Crear la rama y copiar la plantilla', 'docs/governance-pack'],
+          ['10:00 – 10:25', 'Inventario de datos', 'inventario-de-datos.md'],
+          ['10:25 – 11:05', 'Tres ADRs', 'docs/adr/0001 a 0003'],
+          ['11:05 – 11:30', 'Registro de riesgos', 'registro-de-riesgos.md'],
+          ['11:30 – 11:45', 'AGENTS.md', 'AGENTS.md en la raíz'],
+          ['11:45 – 12:00', 'Abrir el PR, leer al bot y corregir', 'PR con el bot en «completa»'],
+        ].map(([hora, titulo, archivo]) => h('li', {}, [
+          h('span', { class: 'cronograma-hora' }, hora),
+          h('span', { class: 'cronograma-punto', 'aria-hidden': 'true' }),
+          h('div', { class: 'cronograma-txt' }, [
+            h('strong', {}, titulo),
+            h('span', { class: 'archivo' }, archivo),
+          ]),
+        ]))),
+      ]),
+    );
+
+    const reglas = seccion('reglas', '05 · Reglas del reto', 'Lo fijo y lo libre',
+      'Un pack corto y verdadero vale más que uno largo y genérico. El reto está cumplido cuando el bot dice que la forma está completa y lo que escribiste es verdad en tu código.',
+      h('div', { class: 'dos' }, [
+        h('div', { class: 'columna' }, [
+          h('h3', {}, [h('span', { class: 'sello sello-acento' }, 'Fijo')]),
+          h('ul', {}, [
+            h('li', {}, 'Seis archivos en las rutas exactas del pack.'),
+            h('li', {}, 'Tres ADRs con estado, fecha y quién decide.'),
+            h('li', {}, 'ADR 0002 con frases verificables sobre lo que la IA nunca decide.'),
+            h('li', {}, 'Inventario con 8 columnas y categorías de la Ley 8968.'),
+            h('li', {}, 'Al menos tres riesgos, con afectados y mitigación.'),
+            h('li', {}, 'AGENTS.md con al menos cinco reglas, y ningún marcador sin llenar.'),
+          ]),
+        ]),
+        h('div', { class: 'columna columna-acento' }, [
+          h('h3', {}, [h('span', { class: 'sello sello-acento' }, 'Libre')]),
+          h('ul', {}, [
+            h('li', {}, 'Qué proyecto documentas y cómo es.'),
+            h('li', {}, 'Qué dice cada ADR, siempre que sea verdad en el código.'),
+            h('li', {}, 'Qué riesgos eliges y qué mitigaciones tienen.'),
+            h('li', {}, 'Qué reglas propias agregas a AGENTS.md.'),
+            h('li', {}, 'Cómo organizas el repositorio y cómo se ve tu propuesta.'),
+          ]),
+        ]),
+      ]),
+    );
+
+    const bot = seccion('bot', '06 · El bot de verificación', 'Revisa la forma, no la verdad',
+      'Un workflow de GitHub Actions corre en cada PR. Comenta el resultado y marca el check en rojo o en verde.',
+      h('div', { class: 'dos' }, [
+        h('div', { class: 'columna' }, [
+          h('h3', {}, [h('span', { class: 'sello sello-ok' }, 'Sí revisa')]),
+          h('ul', {}, [
+            h('li', {}, 'Que existan los seis archivos.'),
+            h('li', {}, 'Que cada ADR tenga estado, fecha, quién decide y sus secciones.'),
+            h('li', {}, 'Que no queden marcadores de plantilla sin llenar.'),
+            h('li', {}, 'Que los datos personales usen una categoría de la Ley 8968.'),
+            h('li', {}, 'Que haya al menos tres riesgos con afectados y mitigación.'),
+          ]),
+        ]),
+        h('div', { class: 'columna' }, [
+          h('h3', {}, [h('span', { class: 'sello sello-pend' }, 'No revisa')]),
+          h('ul', {}, [
+            h('li', {}, 'Que lo escrito sea cierto en tu código.'),
+            h('li', {}, 'Que el inventario tenga todos tus datos.'),
+            h('li', {}, 'Que la categoría elegida sea la correcta.'),
+            h('li', {}, 'Que los riesgos sean los importantes para tu sistema.'),
+          ]),
+        ]),
+      ]),
+    );
+
+    const checklist = seccion('checklist', '07 · Checklist del PR', 'Tu avance, en vivo',
+      `Llevas ${listos} de ${pasos.length} puntos. Este estado se calcula con las reglas del bot sobre lo que escribiste en la actividad.`,
+      checklistEnVivo(),
+    );
+
+    const codigo = seccion('gobernanza-en-el-codigo', '08 · Gobernanza en el código', 'Cada regla responde a algo que ya falló',
+      'Las reglas de un repositorio serio no son teoría: cada una previene un fallo documentado.',
+      h('div', { class: 'tabla-wrap' }, h('table', { class: 'fallos' }, [
+        h('thead', {}, h('tr', {}, [h('th', {}, 'Lo que falló'), h('th', {}, 'La regla que lo previene'), h('th', {}, 'Herramienta')])),
+        h('tbody', {}, [
+          h('tr', {}, [h('td', {}, 'Salta, Países Bajos, Workday'), h('td', {}, 'La IA extrae; nunca puntúa ni descarta personas'), h('td', {}, h('span', { class: 'sello sello-acento' }, 'ADR'))]),
+          h('tr', {}, [h('td', {}, 'Deloitte Australia (2025)'), h('td', {}, 'Verificar contra la fuente; lo dudoso se marca'), h('td', {}, h('span', { class: 'sello sello-acento' }, 'AGENTS.md'))]),
+          h('tr', {}, [h('td', {}, 'Replit (2025)'), h('td', {}, 'Los agentes no borran; ante la duda, no actúan'), h('td', {}, h('span', { class: 'sello sello-acento' }, 'Límites'))]),
+          h('tr', {}, [h('td', {}, 'Comment and Control (2026)'), h('td', {}, 'El texto de terceros es dato, no instrucción'), h('td', {}, h('span', { class: 'sello sello-acento' }, 'Texto externo'))]),
+          h('tr', {}, [h('td', {}, 'Filtraciones en Costa Rica'), h('td', {}, 'Inventario, logs sin datos personales, purga'), h('td', {}, h('span', { class: 'sello sello-acento' }, 'Datos personales'))]),
+          h('tr', {}, [h('td', {}, 'Air Canada (2024)'), h('td', {}, 'La empresa responde; siempre hay una persona'), h('td', {}, h('span', { class: 'sello sello-acento' }, 'Responsabilidad'))]),
+        ]),
+      ])),
+    );
+
+    const normativa = seccion('normativa', '09 · Marco normativo', 'Lo que rige hoy ya está cambiando',
+      'Lo que importa para tu proyecto, con la fecha en la que entró en vigor o se discute.',
+      h('div', { class: 'tabla-wrap' }, h('table', {}, [
+        h('thead', {}, h('tr', {}, [h('th', {}, 'Norma o política'), h('th', {}, 'Desde'), h('th', {}, 'Lo que importa')])),
+        h('tbody', {}, [
+          h('tr', {}, [h('td', {}, 'Ley 8968, protección de datos personales (CR)'), h('td', { class: 'num' }, '2011'), h('td', {}, 'Consentimiento informado (art. 5), categorías de datos (art. 9), derechos de acceso, rectificación y supresión.')]),
+          h('tr', {}, [h('td', {}, 'Estrategia Nacional de IA 2024–2027 (MICITT)'), h('td', { class: 'num' }, 'Oct. 2024'), h('td', {}, 'Política pública, no ley: orienta el uso ético y seguro de la IA.')]),
+          h('tr', {}, [h('td', {}, 'Expediente 25.826, reforma a la Ley 8968'), h('td', { class: 'num' }, 'Oct. 2026'), h('td', {}, 'En trámite: cifrado de bases de datos y aviso de brechas en 72 horas.')]),
+          h('tr', {}, [h('td', {}, 'Reglamento de IA de la UE, ajustado por el Omnibus Digital'), h('td', { class: 'num' }, 'Jul. 2026'), h('td', {}, 'Alto riesgo (incluye empleo) se aplaza al 2 de diciembre de 2027; la transparencia ya rige.')]),
+        ]),
+      ])),
+      h('p', { class: 'nota', style: '' }, 'Estándares técnicos: NIST AI RMF (gobernar, mapear, medir y gestionar el riesgo), ISO/IEC 42001 (sistema de gestión de IA certificable) y OWASP Top 10 para LLM y agentes (inyección de prompt, fuga de datos, agentes con demasiado poder).'),
+    );
+
+    const fuentes = h('footer', { class: 'pie' }, [
+      h('div', { class: 'pie-grid' }, [
+        h('div', {}, [
+          h('p', { class: 'kicker' }, 'Para llevarse'),
+          h('p', { class: 'titular', style: '' }, 'La IA no decide sola. Alguien decidió por ella: que quede escrito.'),
+        ]),
+        h('div', {}, [
+          h('p', { class: 'nota' }, 'Referencias: Nygard (2011), Documenting Architecture Decisions; MADR; AGENTS.md; OWASP; Ley 8968 de Costa Rica.'),
+          h('p', { class: 'nota' }, 'Autor: Gustavo Machado Loría.'),
+        ]),
+      ]),
+    ]);
+
+    const reto = h('section', { class: 'seccion', id: 'reto', 'data-revelar': true }, [
+      h('div', { class: 'seccion-cabecera' }, [
+        h('div', {}, [h('p', { class: 'kicker' }, 'El reto'), h('h2', {}, 'Empieza la actividad')]),
+        h('p', { class: 'lead' }, 'Completa cada entregable en el espacio de trabajo. La revisión usa las reglas del bot y copia cada archivo listo para pegar en tu repositorio.'),
+      ]),
+      h('div', { class: 'botones' }, [
+        h('a', { class: 'btn btn-primario', href: '#inventario' }, ['Ir al inventario', h('span', { class: 'flecha', 'aria-hidden': 'true' }, '→')]),
+        h('a', { class: 'btn btn-secundario', href: '#revision' }, 'Ir a la revisión'),
+      ]),
+    ]);
+
+    setTimeout(iniciarEfectos, 0);
+    return h('div', { class: 'propuesta' }, [portada, puntoDePartida, preguntasDelPack, entregables, cronograma, reglas, bot, checklist, codigo, normativa, reto, fuentes]);
+  }
+
+  function inventario() {
+    const cerrarSeccion = () => render();
+    return h('section', { class: 'vista' }, [
+      h('div', {}, [
+        h('h2', {}, 'Inventario de datos'),
+        h('p', { class: 'nota' }, 'Una tarjeta por cada dato que el sistema guarda, recibe o envía a un tercero, incluido el proveedor de IA. Si es personal, elige su categoría.'),
+      ]),
+      ...state.inventario.map((f, i) => h('article', { class: 'tarjeta' }, [
+        h('div', { class: 'tarjeta-cabecera' }, [
+          h('h3', {}, `Dato ${i + 1}`),
+          h('button', {
+            type: 'button',
+            class: 'boton-sec',
+            onclick: () => { state.inventario.splice(i, 1); guardar(); cerrarSeccion(); },
+          }, 'Quitar dato'),
+        ]),
+        h('div', { class: 'rejilla' }, [
+          campo('Dato', entrada(f.dato, (v) => { f.dato = v; }, { placeholder: 'Ej.: Correo del cliente' })),
+          campo('¿Personal?', selector(['Sí', 'No'], f.personal, (v) => {
+            f.personal = v;
+            f.categoria = v === 'Sí' ? '' : 'No aplica';
+            cerrarSeccion();
+          })),
+          campo('Categoría (Ley 8968)', selector(
+            f.personal === 'Sí' ? ['', ...CATEGORIAS] : ['No aplica'],
+            f.categoria,
+            (v) => { f.categoria = v; },
+          )),
+          campo('De dónde viene', entrada(f.origen, (v) => { f.origen = v; }, { placeholder: 'Ej.: Formulario público' })),
+          campo('Dónde se guarda', entrada(f.almacen, (v) => { f.almacen = v; }, { placeholder: 'Ej.: Tabla solicitudes' })),
+          campo('¿Sale a un tercero? ¿A quién?', entrada(f.tercero, (v) => { f.tercero = v; }, { placeholder: 'No, o a quién y para qué' })),
+          campo('Cuánto se conserva', entrada(f.plazo, (v) => { f.plazo = v; }, { placeholder: 'Ej.: 365 días' })),
+          campo('Quién puede verlo', entrada(f.quien, (v) => { f.quien = v; }, { placeholder: 'Ej.: Agentes con sesión' })),
+        ]),
+      ])),
+      h('div', { class: 'acciones' }, h('button', {
+        type: 'button',
+        class: 'boton',
+        onclick: () => { state.inventario.push(filaInventario()); guardar(); cerrarSeccion(); },
+      }, 'Agregar dato')),
+      h('article', { class: 'tarjeta' }, [
+        h('h3', {}, 'Lo que NO recolectamos'),
+        editorLista(state.noRecolectamos, {
+          etiqueta: 'Dato no recolectado',
+          ayuda: 'Un dato que decidiste no pedir y por qué. Ejemplo: «Cédula: no la necesitamos para responder».',
+          rerender: render,
+        }),
+      ]),
+    ]);
+  }
+
+  function adrs() {
+    return h('section', { class: 'vista' }, [
+      h('div', {}, [
+        h('h2', {}, 'Tres ADRs'),
+        h('p', { class: 'nota' }, 'Un ADR aceptado no se edita: si la decisión cambia, se escribe uno nuevo que lo reemplaza. Cada respuesta debe ser verdad en tu código.'),
+      ]),
+      ...ADR.map((base) => {
+        const d = state.adrs[base.id];
+        return h('article', { class: 'tarjeta' }, [
+          h('h3', {}, `ADR-${base.id} · ${base.tema}`),
+          h('div', { class: 'rejilla' }, [
+            campo('Título de la decisión', entrada(d.titulo, (v) => { d.titulo = v; }, { placeholder: 'Una frase' })),
+            campo('Estado', selector(['Propuesto', 'Aceptado', 'Reemplazado'], d.estado, (v) => { d.estado = v; })),
+            campo('Fecha', entrada(d.fecha, (v) => { d.fecha = v; }, { type: 'date' })),
+            campo('Decide (nombre y rol)', entrada(d.decide, (v) => { d.decide = v; }, { placeholder: 'Ej.: Ana Pérez, responsable de producto' })),
+          ]),
+          campo('Contexto', area(d.contexto, (v) => { d.contexto = v; }), 'El problema y las restricciones, en 3 a 5 líneas.'),
+          campo('Decisión', area(d.decision, (v) => { d.decision = v; }), base.id === '0002'
+            ? 'Frases verificables: qué hace la IA y qué nunca hace. Quién confirma antes de que tenga efecto.'
+            : 'Qué se hace, en frases que se puedan comprobar.'),
+          h('div', { class: 'campo' }, [
+            h('span', { class: 'campo-titulo' }, 'Alternativas descartadas'),
+            editorLista(d.alternativas, {
+              etiqueta: 'Alternativa',
+              ayuda: 'Otras opciones que consideraste y por qué no.',
+              rerender: render,
+            }),
+          ]),
+          campo('Consecuencias', area(d.consecuencias, (v) => { d.consecuencias = v; }), 'Qué se gana, qué se pierde y qué queda pendiente.'),
+          campo('Cómo se verifica', area(d.verificacion, (v) => { d.verificacion = v; }), 'Dónde en el código o en las pruebas se ve que se cumple.'),
+        ]);
+      }),
+    ]);
+  }
+
+  function riesgos() {
+    return h('section', { class: 'vista' }, [
+      h('div', {}, [
+        h('h2', {}, 'Registro de riesgos'),
+        h('p', { class: 'nota' }, 'Riesgos concretos, no genéricos. «Hackeo» no sirve; «los correos de los clientes salen en los logs de errores» sí. Para cada uno, quién sale afectado.'),
+      ]),
+      ...state.riesgos.map((r, i) => h('article', { class: 'tarjeta' }, [
+        h('div', { class: 'tarjeta-cabecera' }, [
+          h('h3', {}, `R${i + 1}`),
+          h('button', {
+            type: 'button',
+            class: 'boton-sec',
+            onclick: () => {
+              if (state.riesgos.length > 1) state.riesgos.splice(i, 1);
+              else state.riesgos[0] = filaRiesgo();
+              guardar();
+              render();
+            },
+          }, 'Quitar riesgo'),
+        ]),
+        campo('Riesgo', area(r.riesgo, (v) => { r.riesgo = v; }, { rows: 2 })),
+        campo('Quién sale afectado', entrada(r.afectados, (v) => { r.afectados = v; }, { placeholder: 'Clientes, la empresa, agentes…' })),
+        h('div', { class: 'rejilla-3' }, [
+          campo('Probabilidad', selector(['B', 'M', 'A'], r.prob, (v) => { r.prob = v; })),
+          campo('Impacto', selector(['B', 'M', 'A'], r.impacto, (v) => { r.impacto = v; })),
+          campo('Estado', selector(['Pendiente', 'En curso', 'Hecho'], r.estado, (v) => { r.estado = v; })),
+        ]),
+        campo('Mitigación', area(r.mitigacion, (v) => { r.mitigacion = v; }, { rows: 2 }), 'Qué lo previene o reduce. Si aún no existe, escríbelo como pendiente.'),
+        campo('Responsable', entrada(r.responsable, (v) => { r.responsable = v; }, { placeholder: 'Nombre de la persona' })),
+      ])),
+      h('div', { class: 'acciones' }, h('button', {
+        type: 'button',
+        class: 'boton',
+        onclick: () => { state.riesgos.push(filaRiesgo()); guardar(); render(); },
+      }, 'Agregar riesgo')),
+    ]);
+  }
+
+  function agentes() {
+    return h('section', { class: 'vista' }, [
+      h('div', {}, [
+        h('h2', {}, 'AGENTS.md'),
+        h('p', { class: 'nota' }, 'Las reglas que cualquier agente de código debe leer antes de tocar el repo. Al menos cinco propias. Deriva cada una de tus ADRs: si el ADR 0002 dice que la IA nunca publica sin confirmación, la regla es «nunca agregar una ruta que publique contenido generado por IA sin confirmación».'),
+      ]),
+      h('article', { class: 'tarjeta' }, [
+        h('h3', {}, 'Reglas propias del proyecto'),
+        editorLista(state.reglas, { etiqueta: 'Regla', rerender: render }),
+      ]),
+    ]);
+  }
+
+  function revision() {
+    const { pasos, marcadores } = revisar(state);
+    const faltantes = pasos.filter((p) => !p.ok);
+    return h('section', { class: 'vista' }, [
+      h('div', {}, [
+        h('h2', {}, 'Revisión y copia'),
+        h('p', { class: 'nota' }, 'Las dos últimas filas se marcan a mano después de revisar. El bot de GitHub es la verificación final.'),
+      ]),
+      h('div', { class: 'tabla-wrap' }, h('table', {}, [
+        h('thead', {}, h('tr', {}, [h('th', {}, 'Punto del checklist'), h('th', {}, 'Estado')])),
+        h('tbody', {}, pasos.map((p, i) => h('tr', {}, [
+          h('td', {}, p.texto),
+          h('td', {}, p.manual
+            ? h('label', { class: 'acciones' }, [
+              h('input', {
+                type: 'checkbox',
+                checked: p.ok,
+                style: 'width:auto;min-height:auto',
+                onchange: (e) => {
+                  if (i === pasos.length - 2) state.manual.revisado = e.target.checked;
+                  else state.manual.bot = e.target.checked;
+                  guardar();
+                  render();
+                },
+              }),
+              h('span', { class: p.ok ? 'pill pill-ok' : 'pill pill-pend' }, p.ok ? 'Marcado' : 'Pendiente'),
+            ])
+            : h('span', { class: p.ok ? 'pill pill-ok' : 'pill pill-pend' }, p.ok ? 'Listo' : 'Falta')),
+        ]))),
+      ])),
+      faltantes.length || marcadores.length ? h('article', { class: 'tarjeta' }, [
+        h('h3', {}, 'Lo que falta'),
+        h('ul', { class: 'errores' }, [
+          ...faltantes.flatMap((p) => p.detalle.length ? p.detalle : [p.texto]).map((t) => h('li', {}, t)),
+          ...marcadores.map((t) => h('li', {}, `Hay un texto con formato de marcador de plantilla: «${t.slice(0, 60)}». Quítalo o reemplázalo.`)),
+        ]),
+      ]) : h('p', { class: 'pill pill-ok', role: 'status' }, 'Todo listo para copiar y revisar en el PR.'),
+      h('h3', {}, 'Archivos listos para pegar'),
+      h('p', { class: 'nota' }, 'Copia cada bloque y pégalo en la ruta indicada del repositorio. Aquí no hay descarga: se copia el texto.'),
+      ...ARCHIVOS().map((archivo) => bloqueArchivo(archivo)),
+      h('div', { class: 'acciones' }, h('button', {
+        type: 'button',
+        class: 'boton-sec boton-peligro',
+        onclick: (e) => {
+          const boton = e.currentTarget;
+          if (boton.dataset.confirmar !== 'si') {
+            boton.dataset.confirmar = 'si';
+            boton.textContent = 'Confirmar: borrar todo el borrador';
+            return;
+          }
+          state = estadoVacio();
+          try { localStorage.removeItem(KEY); } catch { /* nada que borrar */ }
+          guardar();
+          render();
+        },
+      }, 'Vaciar borrador')),
+    ]);
+  }
+
+  function bloqueArchivo({ ruta, texto }) {
+    const pre = h('pre', { tabindex: '0', 'aria-label': `Contenido de ${ruta}` }, texto);
+    const boton = h('button', { type: 'button', class: 'boton-sec' }, 'Copiar');
+    boton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(texto);
+        boton.textContent = 'Copiado';
+      } catch {
+        // El navegador puede bloquear el portapapeles: se selecciona el texto para copiarlo a mano.
+        const rango = document.createRange();
+        rango.selectNodeContents(pre);
+        const seleccion = window.getSelection();
+        seleccion.removeAllRanges();
+        seleccion.addRange(rango);
+        boton.textContent = 'Selecciónalo y copia';
+      }
+      setTimeout(() => { boton.textContent = 'Copiar'; }, 2200);
+    });
+    return h('div', { class: 'bloque' }, [
+      h('div', { class: 'bloque-cabecera' }, [h('span', { class: 'ruta' }, ruta), boton]),
+      pre,
+    ]);
+  }
+
+  window.addEventListener('hashchange', render);
+  render();
+})();
+</script>
