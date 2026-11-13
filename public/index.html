@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bandeja de soporte</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Bandeja de soporte</h1>
+    <p class="nota">La IA sugiere; una persona aprueba cada respuesta.</p>
+  </header>
+
+  <main>
+    <section id="publico">
+      <h2>Escríbenos</h2>
+      <form id="formulario-solicitud">
+        <label>Nombre <input name="nombre" required minlength="2" maxlength="100"></label>
+        <label>Correo <input name="correo" type="email" required></label>
+        <label>Mensaje <textarea name="mensaje" required minlength="5" maxlength="2000" rows="4"></textarea></label>
+        <button type="submit">Enviar</button>
+        <p id="estado-solicitud" role="status"></p>
+      </form>
+      <p class="nota">Al enviar aceptas que guardemos tu nombre, correo y mensaje para responderte. Puedes pedir copia o borrado escribiendo a soporte.</p>
+    </section>
+
+    <section id="agentes" hidden>
+      <div class="barra">
+        <h2>Solicitudes</h2>
+        <button id="salir" type="button">Salir</button>
+      </div>
+      <ul id="lista"></ul>
+    </section>
+
+    <section id="acceso">
+      <h2>Acceso de agentes</h2>
+      <form id="formulario-login">
+        <label>Correo <input name="correo" type="email" required></label>
+        <label>Clave <input name="clave" type="password" required minlength="10"></label>
+        <button type="submit">Entrar</button>
+        <p id="estado-login" role="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "gobernanza-bandeja-soporte",
+  "version": "1.0.0",
+  "description": "Bandeja de soporte donde la IA sugiere y una persona aprueba cada respuesta.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/app.test.js",
+    "purgar": "node src/purgar.js"
+  },
+  "license": "UNLICENSED"
+}
