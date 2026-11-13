@@ -573,15 +573,74 @@ pre {
 .cronograma-lista { list-style: none; margin: 0; padding: 0; }
 .cronograma { position: relative; }
 .propuesta { min-width: 0; }
-.caso-fecha + h3 { margin-top: 0; }
 .cifras .cifra-num { min-height: 1em; }
 .casos { margin-top: 8px; }
+
+/* Íconos: una sola geometría, color heredado, tamaño por contexto */
+.icono { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: none; color: var(--acento); }
+.icono svg { width: 100%; height: 100%; display: block; }
+.icono-titulo { width: 26px; height: 26px; margin-top: 2px; }
+.icono-cifra { width: 26px; height: 26px; }
+.icono-caso { width: 16px; height: 16px; }
+.icono-col { width: 20px; height: 20px; color: var(--ink); }
+.icono-paso { width: 16px; height: 16px; margin-right: 8px; vertical-align: -3px; }
+.icono-meta { width: 16px; height: 16px; margin-right: 8px; vertical-align: -3px; color: var(--muted); }
+.icono-est { width: 22px; height: 22px; color: var(--acento); margin-bottom: 6px; }
+.icono-nota { width: 15px; height: 15px; margin-right: 6px; vertical-align: -3px; color: var(--muted); }
+.flecha { width: 16px; height: 16px; color: currentColor; transition: transform 200ms ease; }
+.btn:hover .flecha { transform: translateX(3px); }
+.btn-secundario .flecha { color: var(--acento); }
+
+.titulo-con-icono { display: flex; align-items: flex-start; gap: 12px; }
+.titulo-con-icono .icono-titulo { color: var(--acento); }
+
+.pregunta-num { color: var(--ink); }
+.pregunta:hover .pregunta-num { color: var(--acento-fg); }
+.pregunta-num .icono { color: inherit; width: 22px; height: 22px; }
+.pregunta-orden { display: block; font: 500 0.7rem var(--mono); letter-spacing: 0.08em; color: var(--acento); margin-bottom: 2px; }
+
+.cifra-cabecera { margin-bottom: 14px; }
+.cifra-cabecera .icono { color: var(--acento); }
+
+.caso-fecha { display: flex; align-items: center; gap: 8px; }
+.caso-fecha .icono { color: var(--acento); }
+
+.archivo-celda { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.archivo-celda .icono { width: 18px; height: 18px; color: var(--acento); }
+.archivo-celda .ruta { font: 500 0.84rem var(--mono); color: var(--ink-2); }
+
+.cronograma-hora { display: inline-flex; align-items: center; gap: 6px; }
+.cronograma-txt strong { display: flex; align-items: center; }
+
+.checklist li { grid-template-columns: auto 1fr auto; }
+.checklist-icono .icono { width: 20px; height: 20px; color: var(--pend); }
+.checklist li.hecho .checklist-icono .icono { color: var(--ok); }
+.checklist li.hecho .checklist-texto { color: var(--ink); }
+.checklist li:not(.hecho) .checklist-texto { color: var(--ink-2); }
+
+.estandares { display: grid; gap: 0; grid-template-columns: 1fr; border-top: 1px solid var(--rule); margin-top: 22px; }
+@media (min-width: 760px) { .estandares { grid-template-columns: repeat(3, 1fr); } }
+.estandares > div { padding: 18px 18px 18px 0; display: flex; flex-direction: column; gap: 4px; }
+@media (min-width: 760px) { .estandares > div + div { padding-left: 18px; border-left: 1px solid var(--rule); } }
+.estandares strong { font: 600 0.98rem var(--sans); }
+.estandares span:last-child { color: var(--muted); font-size: 0.9rem; }
+
+.seccion-cta { border-top: 2px solid var(--ink); }
+.seccion-cta .botones { margin-top: 0; }
+
+/* Botón de tema con ícono y etiqueta */
+.tema { display: inline-flex; align-items: center; gap: 8px; }
+.tema .icono { width: 16px; height: 16px; color: var(--ink); }
+
+/* Entrada de cada sección: el índice se alinea con el título */
+.kicker { margin-bottom: 12px; }
 @media (max-width: 520px) {
-  .portada { padding-top: 36px; }
   .cronograma::before, .cronograma-barra { left: 16px; }
   .cronograma li { grid-template-columns: 1fr; gap: 6px; padding-left: 40px; }
   .cronograma-punto { position: absolute; left: 11px; top: 18px; margin: 0; }
   .cronograma-hora { order: -1; }
+  .portada { padding-top: 36px; }
+  .archivo-celda .ruta { font-size: 0.78rem; }
 }
 </style>
 
@@ -963,21 +1022,60 @@ pre {
     actualizarProgreso();
   };
 
+  // ---------- Sistema de íconos: trazo de 1.6 px sobre rejilla de 24 ----------
+  // Solo cadenas fijas del propio código; ningún texto de usuario entra aquí.
+  const ICONOS = {
+    pregunta: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5h.01"/>',
+    personas: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18.5 14.5A6.5 6.5 0 0 1 21.5 20"/>',
+    datos: '<ellipse cx="12" cy="5.5" rx="7.5" ry="2.5"/><path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13"/><path d="M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5"/>',
+    responsable: '<circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 11.2-5.6"/><path d="m15.5 17 2 2 4-4.5"/>',
+    corregir: '<path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/>',
+    archivo: '<path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 17h5"/>',
+    reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    ojo: '<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    escudo: '<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+    alerta: '<circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5h.01"/>',
+    flecha: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    luna: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+    monitor: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
+    balanza: '<path d="M12 3v18M5 7h14M7 7l-3.5 6.5a3.5 3.5 0 0 0 7 0zM17 7l-3.5 6.5a3.5 3.5 0 0 0 7 0zM8 21h8"/>',
+    libro: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 5v16"/>',
+    candado: '<rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
+    rama: '<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10M18 10c0 4-6 3-12 7"/>',
+    lista: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.5 1.5L7.5 5M3.5 18l1.5 1.5L7.5 17"/>',
+    check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    capa: '<path d="M12 3 3 8l9 5 9-5z"/><path d="m3 13 9 5 9-5"/>',
+    casa: '<path d="M4 11 12 4l8 7"/><path d="M6 10v10h12V10"/>',
+  };
+
+  const icono = (nombre, clase = 'icono') => {
+    const span = h('span', { class: clase, 'aria-hidden': 'true' });
+    span.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONOS[nombre] ?? ''}</svg>`;
+    return span;
+  };
+
   // ---------- Tema claro / oscuro / sistema ----------
   const TEMA_KEY = 'gobernanza.tema';
-  const TEMAS = ['sistema', 'claro', 'oscuro'];
-  const aplicarTema = (tema) => {
-    if (tema === 'sistema') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', tema === 'claro' ? 'light' : 'dark');
+  const TEMAS = [
+    { id: 'sistema', etiqueta: 'Sistema', icono: 'monitor' },
+    { id: 'claro', etiqueta: 'Claro', icono: 'sol' },
+    { id: 'oscuro', etiqueta: 'Oscuro', icono: 'luna' },
+  ];
+  const aplicarTema = (id) => {
+    if (id === 'sistema') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', id === 'claro' ? 'light' : 'dark');
+    const info = TEMAS.find((t) => t.id === id);
     const boton = document.getElementById('tema');
-    if (boton) boton.textContent = `Tema: ${tema}`;
+    if (boton && info) boton.replaceChildren(icono(info.icono), h('span', {}, `Tema · ${info.etiqueta}`));
   };
   let temaActual = 'sistema';
   try { temaActual = localStorage.getItem(TEMA_KEY) || 'sistema'; } catch { /* sin almacenamiento */ }
-  if (!TEMAS.includes(temaActual)) temaActual = 'sistema';
+  if (!TEMAS.some((t) => t.id === temaActual)) temaActual = 'sistema';
   aplicarTema(temaActual);
   document.getElementById('tema').addEventListener('click', () => {
-    temaActual = TEMAS[(TEMAS.indexOf(temaActual) + 1) % TEMAS.length];
+    const i = TEMAS.findIndex((t) => t.id === temaActual);
+    temaActual = TEMAS[(i + 1) % TEMAS.length].id;
     aplicarTema(temaActual);
     try { localStorage.setItem(TEMA_KEY, temaActual); } catch { /* sin almacenamiento */ }
   });
@@ -1025,38 +1123,44 @@ pre {
   };
 
   // ---------- Piezas de la propuesta ----------
-  const seccion = (id, numero, titulo, intro, ...contenido) =>
+  const seccion = (id, numero, icon, titulo, intro, ...contenido) =>
     h('section', { class: 'seccion', id, 'data-revelar': true }, [
       h('div', { class: 'seccion-cabecera' }, [
-        h('div', {}, [h('p', { class: 'kicker' }, numero), h('h2', {}, titulo)]),
+        h('div', {}, [
+          h('p', { class: 'kicker' }, numero),
+          h('h2', { class: 'titulo-con-icono' }, [icono(icon, 'icono icono-titulo'), h('span', {}, titulo)]),
+        ]),
         intro ? h('p', { class: 'lead' }, intro) : null,
       ]),
       ...contenido,
     ]);
 
-  const cifra = ({ numero, prefijo = '', sufijo = '', texto, fuente }) =>
+  const cifra = ({ icon, numero, prefijo = '', sufijo = '', texto, fuente }) =>
     h('div', { class: 'cifra' }, [
+      h('div', { class: 'cifra-cabecera' }, [icono(icon, 'icono icono-cifra')]),
       h('div', {
         class: 'cifra-num',
-        'data-contar': numero,
-        'data-prefijo': prefijo,
-        'data-sufijo': sufijo,
-      }, `${prefijo}${numero.toLocaleString('es')}${sufijo}`),
-      h('p', { class: 'cifra-txt' }, texto),
+        ...(numero !== undefined ? { 'data-contar': numero, 'data-prefijo': prefijo, 'data-sufijo': sufijo } : {}),
+      }, numero !== undefined ? `${prefijo}${numero.toLocaleString('es')}${sufijo}` : texto.titulo),
+      h('p', { class: 'cifra-txt' }, numero !== undefined ? texto : texto.cuerpo),
       h('p', { class: 'cifra-fuente' }, fuente),
     ]);
 
   const diagrama = () => {
     const preguntas = [
-      ['¿Quién decide?', 'Qué decisiones toma la IA y cuáles quedan en manos de una persona.'],
-      ['¿Con qué datos?', 'Qué se recolecta, qué no, a dónde viaja y cuánto se guarda.'],
-      ['¿Quién responde?', 'Una persona con nombre, no «el sistema» ni «el modelo».'],
-      ['¿Cómo se corrige?', 'Qué pasa cuando falla y cómo reclama la persona afectada.'],
+      ['pregunta', '¿Quién decide?', 'Qué decisiones toma la IA y cuáles quedan en manos de una persona.'],
+      ['datos', '¿Con qué datos?', 'Qué se recolecta, qué no, a dónde viaja y cuánto se guarda.'],
+      ['responsable', '¿Quién responde?', 'Una persona con nombre, no «el sistema» ni «el modelo».'],
+      ['corregir', '¿Cómo se corrige?', 'Qué pasa cuando falla y cómo reclama la persona afectada.'],
     ];
-    const items = preguntas.map(([titulo, texto], i) => {
+    const items = preguntas.map(([nombre, titulo, texto], i) => {
       const li = h('li', { class: 'pregunta' }, [
-        h('span', { class: 'pregunta-num' }, String(i + 1).padStart(2, '0')),
-        h('div', {}, [h('strong', {}, titulo), h('span', {}, texto)]),
+        h('span', { class: 'pregunta-num' }, [icono(nombre)]),
+        h('div', {}, [
+          h('span', { class: 'pregunta-orden' }, String(i + 1).padStart(2, '0')),
+          h('strong', {}, titulo),
+          h('span', {}, texto),
+        ]),
       ]);
       li.style.setProperty('--i', String(i));
       return li;
@@ -1083,11 +1187,14 @@ pre {
       'Nada contradice lo que el código hace hoy',
       'El bot comentó «la forma del pack está completa»',
     ];
-    return h('ol', { class: 'checklist' }, pasos.map((p, i) => h('li', {}, [
-      h('span', {}, textos[i]),
+    return h('ol', { class: 'checklist' }, pasos.map((p, i) => h('li', { class: p.ok ? 'hecho' : '' }, [
+      h('span', { class: 'checklist-icono' }, [icono(p.ok ? 'check' : 'alerta')]),
+      h('span', { class: 'checklist-texto' }, textos[i]),
       h('span', { class: p.ok ? 'sello sello-ok' : 'sello sello-pend' }, p.ok ? 'Listo' : 'Pendiente'),
     ])));
   };
+
+  const archivoCelda = (ruta) => h('td', {}, h('span', { class: 'archivo-celda' }, [icono('archivo'), h('span', { class: 'ruta' }, ruta)]));
 
   function inicio() {
     const { pasos } = revisar(state);
@@ -1106,13 +1213,10 @@ pre {
           h('div', { class: 'portada-meta' }, [
             h('span', {}, 'Gustavo Machado Loría'),
             h('span', {}, 'Business Solutions · Fundación Forward Costa Rica'),
-            h('span', {}, 'Reto · 9:45 a 12:00'),
+            h('span', { class: 'meta-hora' }, [icono('reloj', 'icono icono-meta'), 'Reto · 9:45 a 12:00']),
           ]),
           h('div', { class: 'botones' }, [
-            h('a', { class: 'btn btn-primario', href: '#inventario' }, [
-              'Empezar la actividad',
-              h('span', { class: 'flecha', 'aria-hidden': 'true' }, '→'),
-            ]),
+            h('a', { class: 'btn btn-primario', href: '#inventario' }, ['Empezar la actividad', icono('flecha', 'icono flecha')]),
             h('a', { class: 'btn btn-secundario', href: '#reto', onclick: irAlReto }, 'Ver el reto'),
           ]),
         ]),
@@ -1120,91 +1224,87 @@ pre {
       ]),
     ]);
 
-    const puntoDePartida = seccion('punto-de-partida', '01 · Punto de partida', 'Lo que sale mal cuando nadie decidió por escrito',
+    const puntoDePartida = seccion('punto-de-partida', '01 · Punto de partida', 'alerta', 'Lo que sale mal cuando nadie decidió por escrito',
       'Son casos reales. Cada uno tiene una decisión que nadie dejó escrita y alguien tuvo que explicar después.',
       h('div', { class: 'cifras' }, [
-        cifra({ numero: 12692, texto: 'niñas y adolescentes de 10 a 19 años en una encuesta a barrios pobres. El sistema de Salta «predecía» embarazos.', fuente: 'Salta, Argentina · 2017–2019' }),
-        cifra({ numero: 400, prefijo: '+', sufijo: ' millones', texto: 'registros de residentes ofrecidos en la dark web por US$2.500, con salarios, teléfonos y direcciones.', fuente: 'Costa Rica · octubre de 2026' }),
-        h('div', { class: 'cifra' }, [
-          h('div', { class: 'cifra-num' }, 'Enero de 2021'),
-          h('p', { class: 'cifra-txt' }, 'Renuncia en pleno el gabinete de Mark Rutte. Un algoritmo de subsidios marcaba familias como fraude por su nacionalidad.'),
-          h('p', { class: 'cifra-fuente' }, 'Países Bajos · 2013–2021'),
-        ]),
+        cifra({ icon: 'personas', numero: 12692, texto: 'niñas y adolescentes de 10 a 19 años en una encuesta a barrios pobres. El sistema de Salta «predecía» embarazos.', fuente: 'Salta, Argentina · 2017–2019' }),
+        cifra({ icon: 'datos', numero: 400, prefijo: '+', sufijo: ' millones', texto: 'registros de residentes ofrecidos en la dark web por US$2.500, con salarios, teléfonos y direcciones.', fuente: 'Costa Rica · octubre de 2026' }),
+        cifra({ icon: 'balanza', texto: { titulo: 'Enero de 2021', cuerpo: 'Renuncia en pleno el gabinete de Mark Rutte. Un algoritmo de subsidios marcaba familias como fraude por su nacionalidad.' }, fuente: 'Países Bajos · 2013–2021' }),
       ]),
-      h('div', { class: 'casos', style: '' }, [
+      h('div', { class: 'casos' }, [
         h('article', { class: 'caso' }, [
-          h('span', { class: 'caso-fecha' }, 'Junio de 2026 · sigue en curso'),
+          h('span', { class: 'caso-fecha' }, [icono('balanza', 'icono icono-caso'), 'Junio de 2026 · sigue en curso']),
           h('h3', {}, 'Mobley contra Workday'),
           h('p', { class: 'nota' }, 'Un filtro de contratación con IA descartaba postulantes por edad. Una jueza certificó una acción colectiva para personas de 40 años o más.'),
         ]),
         h('article', { class: 'caso' }, [
-          h('span', { class: 'caso-fecha' }, 'Febrero de 2024'),
+          h('span', { class: 'caso-fecha' }, [icono('escudo', 'icono icono-caso'), 'Febrero de 2024']),
           h('h3', {}, 'Moffatt contra Air Canada'),
           h('p', { class: 'nota' }, 'El chatbot inventó una política de descuento. El tribunal obligó a la aerolínea a cumplirla: la empresa responde por lo que dice su sitio.'),
         ]),
         h('article', { class: 'caso' }, [
-          h('span', { class: 'caso-fecha' }, 'Julio de 2025'),
+          h('span', { class: 'caso-fecha' }, [icono('datos', 'icono icono-caso'), 'Julio de 2025']),
           h('h3', {}, 'Replit borra una base de datos'),
           h('p', { class: 'nota' }, 'Durante una congelación de código, un agente borró la base de un usuario. La respuesta fue separar desarrollo y producción.'),
         ]),
       ]),
     );
 
-    const preguntasDelPack = seccion('preguntas', '02 · La definición de trabajo', 'Gobernar es poder contestar cuatro preguntas, por escrito',
+    const preguntasDelPack = seccion('preguntas', '02 · La definición de trabajo', 'pregunta', 'Gobernar es poder contestar cuatro preguntas, por escrito',
       'Cada pregunta tiene un archivo que la responde. Si un archivo no responde una pregunta, el pack queda incompleto.',
       h('div', { class: 'tabla-wrap' }, h('table', {}, [
         h('thead', {}, h('tr', {}, [h('th', {}, 'Pregunta'), h('th', {}, 'Archivo que la contesta')])),
         h('tbody', {}, [
-          h('tr', {}, [h('td', {}, '¿Quién decide: la IA o una persona?'), h('td', { class: 'ruta' }, 'docs/adr/0002-que-decide-la-ia.md')]),
-          h('tr', {}, [h('td', {}, '¿Con qué datos trabaja el sistema?'), h('td', { class: 'ruta' }, 'docs/gobernanza/inventario-de-datos.md · docs/adr/0003-donde-viven-los-datos.md')]),
+          h('tr', {}, [h('td', {}, '¿Quién decide: la IA o una persona?'), archivoCelda('docs/adr/0002-que-decide-la-ia.md')]),
+          h('tr', {}, [h('td', {}, '¿Con qué datos trabaja el sistema?'), h('td', {}, h('span', { class: 'archivo-celda' }, [icono('archivo'), h('span', { class: 'ruta' }, 'docs/gobernanza/inventario-de-datos.md')]))]),
           h('tr', {}, [h('td', {}, '¿Quién responde por cada decisión?'), h('td', {}, 'El campo Decide de cada ADR y la columna Responsable del registro')]),
-          h('tr', {}, [h('td', {}, '¿Cómo se corrige cuando algo falla?'), h('td', { class: 'ruta' }, 'docs/gobernanza/registro-de-riesgos.md')]),
+          h('tr', {}, [h('td', {}, '¿Cómo se corrige cuando algo falla?'), archivoCelda('docs/gobernanza/registro-de-riesgos.md')]),
         ]),
       ])),
     );
 
-    const entregables = seccion('entregables', '03 · Lo que entregas', 'Seis archivos en tu repositorio',
+    const entregables = seccion('entregables', '03 · Lo que entregas', 'archivo', 'Seis archivos en tu repositorio',
       'Más el modelo de IA, que documenta el ADR 0001. Todo en la rama docs/governance-pack, con un único PR hacia main.',
       h('div', { class: 'tabla-wrap' }, h('table', {}, [
         h('thead', {}, h('tr', {}, [h('th', {}, 'Archivo'), h('th', {}, 'Qué responde')])),
         h('tbody', {}, [
-          h('tr', {}, [h('td', { class: 'ruta' }, 'AGENTS.md'), h('td', {}, 'Reglas que leen los agentes de código antes de tocar tu repo.')]),
-          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/adr/0001-modelo-y-proveedor-de-ia.md'), h('td', {}, 'Modelo, proveedor, criterios y alternativas descartadas.')]),
-          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/adr/0002-que-decide-la-ia.md'), h('td', {}, 'Qué decide la IA y qué decide una persona. El más importante.')]),
-          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/adr/0003-donde-viven-los-datos.md'), h('td', {}, 'Bases, tránsito, hosting, webhooks y controles de seguridad.')]),
-          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/gobernanza/inventario-de-datos.md'), h('td', {}, 'Cada dato que captura, procesa o guarda, con su categoría.')]),
-          h('tr', {}, [h('td', { class: 'ruta' }, 'docs/gobernanza/registro-de-riesgos.md'), h('td', {}, 'Riesgos con severidad, probabilidad, afectados y responsable.')]),
+          h('tr', {}, [archivoCelda('AGENTS.md'), h('td', {}, 'Reglas que leen los agentes de código antes de tocar tu repo.')]),
+          h('tr', {}, [archivoCelda('docs/adr/0001-modelo-y-proveedor-de-ia.md'), h('td', {}, 'Modelo, proveedor, criterios y alternativas descartadas.')]),
+          h('tr', {}, [archivoCelda('docs/adr/0002-que-decide-la-ia.md'), h('td', {}, 'Qué decide la IA y qué decide una persona. El más importante.')]),
+          h('tr', {}, [archivoCelda('docs/adr/0003-donde-viven-los-datos.md'), h('td', {}, 'Bases, tránsito, hosting, webhooks y controles de seguridad.')]),
+          h('tr', {}, [archivoCelda('docs/gobernanza/inventario-de-datos.md'), h('td', {}, 'Cada dato que captura, procesa o guarda, con su categoría.')]),
+          h('tr', {}, [archivoCelda('docs/gobernanza/registro-de-riesgos.md'), h('td', {}, 'Riesgos con severidad, probabilidad, afectados y responsable.')]),
         ]),
       ])),
     );
 
-    const cronograma = seccion('cronograma', '04 · Cronograma', 'Cuatro horas que se convierten en un PR',
+    const cronograma = seccion('cronograma', '04 · Cronograma', 'reloj', 'Cuatro horas que se convierten en un PR',
       'Si te atrasas, prioriza el inventario, el ADR 0002 y el registro de riesgos. Son los tres que más importan.',
       h('div', { class: 'cronograma', 'data-revelar': true }, [
         h('span', { class: 'cronograma-barra', 'aria-hidden': 'true' }),
         h('ol', { class: 'cronograma-lista' }, [
-          ['9:45 – 10:00', 'Crear la rama y copiar la plantilla', 'docs/governance-pack'],
-          ['10:00 – 10:25', 'Inventario de datos', 'inventario-de-datos.md'],
-          ['10:25 – 11:05', 'Tres ADRs', 'docs/adr/0001 a 0003'],
-          ['11:05 – 11:30', 'Registro de riesgos', 'registro-de-riesgos.md'],
-          ['11:30 – 11:45', 'AGENTS.md', 'AGENTS.md en la raíz'],
-          ['11:45 – 12:00', 'Abrir el PR, leer al bot y corregir', 'PR con el bot en «completa»'],
-        ].map(([hora, titulo, archivo]) => h('li', {}, [
+          ['9:45 – 10:00', 'Crear la rama y copiar la plantilla', 'docs/governance-pack', 'rama'],
+          ['10:00 – 10:25', 'Inventario de datos', 'inventario-de-datos.md', 'datos'],
+          ['10:25 – 11:05', 'Tres ADRs', 'docs/adr/0001 a 0003', 'libro'],
+          ['11:05 – 11:30', 'Registro de riesgos', 'registro-de-riesgos.md', 'escudo'],
+          ['11:30 – 11:45', 'AGENTS.md', 'AGENTS.md en la raíz', 'capa'],
+          ['11:45 – 12:00', 'Abrir el PR, leer al bot y corregir', 'PR con el bot en «completa»', 'ojo'],
+        ].map(([hora, titulo, archivo, icon]) => h('li', {}, [
           h('span', { class: 'cronograma-hora' }, hora),
           h('span', { class: 'cronograma-punto', 'aria-hidden': 'true' }),
           h('div', { class: 'cronograma-txt' }, [
-            h('strong', {}, titulo),
+            h('strong', {}, [icono(icon, 'icono icono-paso'), titulo]),
             h('span', { class: 'archivo' }, archivo),
           ]),
         ]))),
       ]),
     );
 
-    const reglas = seccion('reglas', '05 · Reglas del reto', 'Lo fijo y lo libre',
+    const reglas = seccion('reglas', '05 · Reglas del reto', 'escudo', 'Lo fijo y lo libre',
       'Un pack corto y verdadero vale más que uno largo y genérico. El reto está cumplido cuando el bot dice que la forma está completa y lo que escribiste es verdad en tu código.',
       h('div', { class: 'dos' }, [
         h('div', { class: 'columna' }, [
-          h('h3', {}, [h('span', { class: 'sello sello-acento' }, 'Fijo')]),
+          h('h3', {}, [icono('escudo', 'icono icono-col'), h('span', { class: 'sello sello-acento' }, 'Fijo')]),
           h('ul', {}, [
             h('li', {}, 'Seis archivos en las rutas exactas del pack.'),
             h('li', {}, 'Tres ADRs con estado, fecha y quién decide.'),
@@ -1215,7 +1315,7 @@ pre {
           ]),
         ]),
         h('div', { class: 'columna columna-acento' }, [
-          h('h3', {}, [h('span', { class: 'sello sello-acento' }, 'Libre')]),
+          h('h3', {}, [icono('rama', 'icono icono-col'), h('span', { class: 'sello sello-acento' }, 'Libre')]),
           h('ul', {}, [
             h('li', {}, 'Qué proyecto documentas y cómo es.'),
             h('li', {}, 'Qué dice cada ADR, siempre que sea verdad en el código.'),
@@ -1227,11 +1327,11 @@ pre {
       ]),
     );
 
-    const bot = seccion('bot', '06 · El bot de verificación', 'Revisa la forma, no la verdad',
+    const bot = seccion('bot', '06 · El bot de verificación', 'ojo', 'Revisa la forma, no la verdad',
       'Un workflow de GitHub Actions corre en cada PR. Comenta el resultado y marca el check en rojo o en verde.',
       h('div', { class: 'dos' }, [
         h('div', { class: 'columna' }, [
-          h('h3', {}, [h('span', { class: 'sello sello-ok' }, 'Sí revisa')]),
+          h('h3', {}, [icono('check', 'icono icono-col'), h('span', { class: 'sello sello-ok' }, 'Sí revisa')]),
           h('ul', {}, [
             h('li', {}, 'Que existan los seis archivos.'),
             h('li', {}, 'Que cada ADR tenga estado, fecha, quién decide y sus secciones.'),
@@ -1241,7 +1341,7 @@ pre {
           ]),
         ]),
         h('div', { class: 'columna' }, [
-          h('h3', {}, [h('span', { class: 'sello sello-pend' }, 'No revisa')]),
+          h('h3', {}, [icono('alerta', 'icono icono-col'), h('span', { class: 'sello sello-pend' }, 'No revisa')]),
           h('ul', {}, [
             h('li', {}, 'Que lo escrito sea cierto en tu código.'),
             h('li', {}, 'Que el inventario tenga todos tus datos.'),
@@ -1252,12 +1352,12 @@ pre {
       ]),
     );
 
-    const checklist = seccion('checklist', '07 · Checklist del PR', 'Tu avance, en vivo',
+    const checklist = seccion('checklist', '07 · Checklist del PR', 'lista', 'Tu avance, en vivo',
       `Llevas ${listos} de ${pasos.length} puntos. Este estado se calcula con las reglas del bot sobre lo que escribiste en la actividad.`,
       checklistEnVivo(),
     );
 
-    const codigo = seccion('gobernanza-en-el-codigo', '08 · Gobernanza en el código', 'Cada regla responde a algo que ya falló',
+    const codigo = seccion('gobernanza-en-el-codigo', '08 · Gobernanza en el código', 'candado', 'Cada regla responde a algo que ya falló',
       'Las reglas de un repositorio serio no son teoría: cada una previene un fallo documentado.',
       h('div', { class: 'tabla-wrap' }, h('table', { class: 'fallos' }, [
         h('thead', {}, h('tr', {}, [h('th', {}, 'Lo que falló'), h('th', {}, 'La regla que lo previene'), h('th', {}, 'Herramienta')])),
@@ -1272,7 +1372,7 @@ pre {
       ])),
     );
 
-    const normativa = seccion('normativa', '09 · Marco normativo', 'Lo que rige hoy ya está cambiando',
+    const normativa = seccion('normativa', '09 · Marco normativo', 'balanza', 'Lo que rige hoy ya está cambiando',
       'Lo que importa para tu proyecto, con la fecha en la que entró en vigor o se discute.',
       h('div', { class: 'tabla-wrap' }, h('table', {}, [
         h('thead', {}, h('tr', {}, [h('th', {}, 'Norma o política'), h('th', {}, 'Desde'), h('th', {}, 'Lo que importa')])),
@@ -1283,30 +1383,34 @@ pre {
           h('tr', {}, [h('td', {}, 'Reglamento de IA de la UE, ajustado por el Omnibus Digital'), h('td', { class: 'num' }, 'Jul. 2026'), h('td', {}, 'Alto riesgo (incluye empleo) se aplaza al 2 de diciembre de 2027; la transparencia ya rige.')]),
         ]),
       ])),
-      h('p', { class: 'nota', style: '' }, 'Estándares técnicos: NIST AI RMF (gobernar, mapear, medir y gestionar el riesgo), ISO/IEC 42001 (sistema de gestión de IA certificable) y OWASP Top 10 para LLM y agentes (inyección de prompt, fuga de datos, agentes con demasiado poder).'),
+      h('div', { class: 'estandares' }, [
+        h('div', {}, [icono('capa', 'icono icono-est'), h('strong', {}, 'NIST AI RMF'), h('span', {}, 'Gobernar, mapear, medir y gestionar el riesgo.')]),
+        h('div', {}, [icono('check', 'icono icono-est'), h('strong', {}, 'ISO/IEC 42001'), h('span', {}, 'Sistema de gestión de IA certificable.')]),
+        h('div', {}, [icono('alerta', 'icono icono-est'), h('strong', {}, 'OWASP LLM y agentes'), h('span', {}, 'Inyección de prompt, fuga de datos, agentes con demasiado poder.')]),
+      ]),
     );
 
     const fuentes = h('footer', { class: 'pie' }, [
       h('div', { class: 'pie-grid' }, [
         h('div', {}, [
           h('p', { class: 'kicker' }, 'Para llevarse'),
-          h('p', { class: 'titular', style: '' }, 'La IA no decide sola. Alguien decidió por ella: que quede escrito.'),
+          h('p', { class: 'titular' }, 'La IA no decide sola. Alguien decidió por ella: que quede escrito.'),
         ]),
         h('div', {}, [
-          h('p', { class: 'nota' }, 'Referencias: Nygard (2011), Documenting Architecture Decisions; MADR; AGENTS.md; OWASP; Ley 8968 de Costa Rica.'),
+          h('p', { class: 'nota' }, [icono('libro', 'icono icono-nota'), 'Nygard (2011), Documenting Architecture Decisions; MADR; AGENTS.md; OWASP; Ley 8968 de Costa Rica.']),
           h('p', { class: 'nota' }, 'Autor: Gustavo Machado Loría.'),
         ]),
       ]),
     ]);
 
-    const reto = h('section', { class: 'seccion', id: 'reto', 'data-revelar': true }, [
+    const reto = h('section', { class: 'seccion seccion-cta', id: 'reto', 'data-revelar': true }, [
       h('div', { class: 'seccion-cabecera' }, [
-        h('div', {}, [h('p', { class: 'kicker' }, 'El reto'), h('h2', {}, 'Empieza la actividad')]),
+        h('div', {}, [h('p', { class: 'kicker' }, '10 · El reto'), h('h2', { class: 'titulo-con-icono' }, [icono('flecha', 'icono icono-titulo'), h('span', {}, 'Empieza la actividad')])]),
         h('p', { class: 'lead' }, 'Completa cada entregable en el espacio de trabajo. La revisión usa las reglas del bot y copia cada archivo listo para pegar en tu repositorio.'),
       ]),
       h('div', { class: 'botones' }, [
-        h('a', { class: 'btn btn-primario', href: '#inventario' }, ['Ir al inventario', h('span', { class: 'flecha', 'aria-hidden': 'true' }, '→')]),
-        h('a', { class: 'btn btn-secundario', href: '#revision' }, 'Ir a la revisión'),
+        h('a', { class: 'btn btn-primario', href: '#inventario' }, ['Ir al inventario', icono('flecha', 'icono flecha')]),
+        h('a', { class: 'btn btn-secundario', href: '#revision' }, [icono('check', 'icono flecha'), 'Ir a la revisión']),
       ]),
     ]);
 
