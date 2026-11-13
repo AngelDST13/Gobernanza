@@ -1339,7 +1339,7 @@ pre {
           h('tr', {}, [archivoCelda('AGENTS.md'), h('td', {}, 'Reglas que leen los agentes de código antes de tocar tu repo.')]),
           h('tr', {}, [archivoCelda('docs/adr/0001-modelo-y-proveedor-de-ia.md'), h('td', {}, 'Modelo, proveedor, criterios y alternativas descartadas.')]),
           h('tr', {}, [archivoCelda('docs/adr/0002-que-decide-la-ia.md'), h('td', {}, 'Qué decide la IA y qué decide una persona. El más importante.')]),
-          h('tr', {}, [archivoCelda('docs/adr/0003-donde-viven-los-datos.md'), h('td', {}, 'Bases, tránsito, hosting, webhooks y controles de seguridad.')]),
+          h('tr', {}, [archivoCelda('docs/adr/0003-donde-viven-los-datos.md'), h('td', {}, 'Dónde viven los datos, qué sale del servidor, controles, plazos y lo pendiente.')]),
           h('tr', {}, [archivoCelda('docs/gobernanza/inventario-de-datos.md'), h('td', {}, 'Cada dato que captura, procesa o guarda, con su categoría.')]),
           h('tr', {}, [archivoCelda('docs/gobernanza/registro-de-riesgos.md'), h('td', {}, 'Riesgos con severidad, probabilidad, afectados y responsable.')]),
         ]),
@@ -1425,6 +1425,33 @@ pre {
       checklistEnVivo(),
     );
 
+    // Cumplimiento: cada exigencia del documento del taller, con dónde está y su estado real.
+    const requisitos = [
+      ['Gobernar es contestar las cuatro preguntas por escrito', 'ADR 0002 y 0003, inventario, AGENTS.md', true],
+      ['La IA no puntúa, ordena ni descarta personas (Salta, Países Bajos, Workday)', 'ADR 0002', true],
+      ['Consentimiento informado antes de guardar (Ley 8968, art. 5)', 'Formulario, ADR 0003 y prueba automática', true],
+      ['Categorías de datos de la Ley 8968 (art. 9) en el inventario', 'inventario-de-datos.md', true],
+      ['Derechos de acceso y de supresión', 'ADR 0003 y dos pruebas', true],
+      ['Cada regla de AGENTS.md responde a un caso que ya falló', 'AGENTS.md, «Por qué existe cada regla»', true],
+      ['El texto de terceros es dato: etiqueta, prompt y salida validada', 'AGENTS.md, ADR 0002, R1', true],
+      ['Límites del agente: no borrar, no mandar correos, [DATO POR VALIDAR]', 'AGENTS.md, «Límites del agente»', true],
+      ['Derecho de rectificación', 'ADR 0003 y R9: pendiente', false],
+      ['Aviso de brechas en 72 horas (Expediente 25.826, en trámite)', 'ADR 0003 y R8: pendiente', false],
+      ['Pruebas en CI con documentos maliciosos (OWASP LLM01)', 'Sin implementar', false],
+      ['Revisión humana: lo escrito coincide con el código', 'Te toca a ti, antes del PR', false],
+    ];
+    const cumplimiento = seccion('cumplimiento', '08 · Cumplimiento del documento', 'escudo', 'Lo que el documento exige, y dónde está',
+      `${requisitos.filter(([, , ok]) => ok).length} de ${requisitos.length} exigencias cumplidas. Lo pendiente está escrito como pendiente, con responsable: no se da por hecho.`,
+      h('div', { class: 'tabla-wrap' }, h('table', {}, [
+        h('thead', {}, h('tr', {}, [h('th', {}, 'Exigencia'), h('th', {}, 'Dónde está'), h('th', {}, 'Estado')])),
+        h('tbody', {}, requisitos.map(([exigencia, donde, ok]) => h('tr', {}, [
+          h('td', {}, exigencia),
+          h('td', { class: 'nota' }, donde),
+          h('td', {}, h('span', { class: ok ? 'sello sello-ok' : 'sello sello-pend' }, ok ? 'Cumplido' : 'Pendiente')),
+        ]))),
+      ])),
+    );
+
     const codigo = seccion('gobernanza-en-el-codigo', '08 · Gobernanza en el código', 'candado', 'Cada regla responde a algo que ya falló',
       'Las reglas de un repositorio serio no son teoría: cada una previene un fallo documentado.',
       h('div', { class: 'tabla-wrap' }, h('table', { class: 'fallos' }, [
@@ -1483,7 +1510,7 @@ pre {
     ]);
 
     setTimeout(iniciarEfectos, 0);
-    return h('div', { class: 'propuesta' }, [portada, puntoDePartida, preguntasDelPack, entregables, cronograma, reglas, bot, checklist, codigo, normativa, reto, fuentes]);
+    return h('div', { class: 'propuesta' }, [portada, puntoDePartida, preguntasDelPack, entregables, cronograma, reglas, bot, checklist, cumplimiento, codigo, normativa, reto, fuentes]);
   }
 
   function inventario() {
