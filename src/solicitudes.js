@@ -3,12 +3,18 @@ import { sugerir } from './ia.js'
 
 const MAX_MENSAJE = 2000
 
-const validarSolicitud = ({ nombre, correo, mensaje }) => {
+// La casilla del formulario envía «on»; una API puede enviar true. Cualquier otra cosa no cuenta como aceptación.
+const CONSENTIMIENTO_ACEPTADO = [true, 'on', 'true']
+
+const validarSolicitud = ({ nombre, correo, mensaje, consentimiento }) => {
   const errores = []
   if (typeof nombre !== 'string' || nombre.trim().length < 2 || nombre.length > 100) errores.push('nombre inválido')
   if (typeof correo !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) errores.push('correo inválido')
   if (typeof mensaje !== 'string' || mensaje.trim().length < 5 || mensaje.length > MAX_MENSAJE) {
     errores.push(`el mensaje debe tener entre 5 y ${MAX_MENSAJE} caracteres`)
+  }
+  if (!CONSENTIMIENTO_ACEPTADO.includes(consentimiento)) {
+    errores.push('falta el consentimiento para guardar tu mensaje (Ley 8968, art. 5)')
   }
   return errores
 }
@@ -20,8 +26,8 @@ export const crearSolicitud = async (db, datos, opciones = {}) => {
 
   const ahora = new Date().toISOString()
   const info = db
-    .prepare('INSERT INTO solicitudes (nombre, correo, mensaje, creado_en) VALUES (?, ?, ?, ?)')
-    .run(datos.nombre.trim(), datos.correo.trim().toLowerCase(), datos.mensaje.trim(), ahora)
+    .prepare('INSERT INTO solicitudes (nombre, correo, mensaje, creado_en, consentimiento_en) VALUES (?, ?, ?, ?, ?)')
+    .run(datos.nombre.trim(), datos.correo.trim().toLowerCase(), datos.mensaje.trim(), ahora, ahora)
   const id = Number(info.lastInsertRowid)
 
   const ia = await sugerir(datos.mensaje, opciones)

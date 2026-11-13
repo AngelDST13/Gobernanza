@@ -28,11 +28,14 @@ Controles aplicados:
 - Las cuentas de agente solo se crean con el código `CODIGO_REGISTRO`.
 - Las respuestas de error no muestran detalles internos.
 - Los logs del servidor solo muestran el nombre del tipo de error, no su contenido.
+- Consentimiento informado (Ley 8968, art. 5): el formulario tiene una casilla obligatoria. El servidor rechaza cualquier envío sin ella y guarda la fecha en `consentimiento_en`. Las solicitudes creadas antes de este cambio no tienen fecha de consentimiento.
 
 Plazos:
 
 - Solicitudes: `RETENCION_DIAS` (365 por defecto). Se borran solas una vez al día y también con `npm run purgar`.
 - Derecho de acceso y de supresión: endpoints para exportar y borrar las solicitudes de un correo.
+- Derecho de rectificación: pendiente. Hoy no hay un endpoint para corregir un dato guardado; la persona debe pedir el cambio por soporte y el agente lo corrige a mano. Responsable: Angel, dueño del proyecto.
+- Aviso de brechas: pendiente. El Expediente 25.826 (en trámite, octubre de 2026) pide avisar en 72 horas. El procedimiento (quién avisa, a quién, con qué plantilla) aún no existe y queda como R8 en el registro de riesgos.
 
 Ubicación y soberanía: el archivo queda en el disco del servidor donde corra la app. Pendiente: definir el servidor y su región. Pendiente: confirmar en qué región procesa Anthropic los datos que recibe.
 
@@ -55,3 +58,4 @@ Ubicación y soberanía: el archivo queda en el disco del servidor donde corra l
 - `test/app.test.js`, «con clave, el texto enviado al proveedor va redactado y dentro de la etiqueta de datos».
 - `test/app.test.js`, «no se puede crear cuenta sin el código de registro».
 - `test/app.test.js`, «derecho de acceso: exportar lo que se guarda de un correo» y «derecho de supresión: borrar una solicitud».
+- `test/app.test.js`, «sin consentimiento informado el mensaje no se guarda, aunque los demás datos sean válidos».

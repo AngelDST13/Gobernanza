@@ -7,6 +7,7 @@ No se puede gobernar lo que no se sabe que se tiene. Una fila por cada dato que 
 | Nombre del cliente | Sí | Acceso restringido | Formulario público | Tabla solicitudes, columna nombre | No | Hasta 365 días (RETENCION_DIAS) | Agentes con sesión iniciada |
 | Correo del cliente | Sí | Acceso restringido | Formulario público | Tabla solicitudes, columna correo | No: nunca se envía al proveedor de IA | Hasta 365 días (RETENCION_DIAS) | Agentes con sesión iniciada |
 | Mensaje del cliente | Sí | Sensible | Formulario público | Tabla solicitudes, columna mensaje | Sí: a Anthropic, solo si hay clave de API, con correos y teléfonos reemplazados | Hasta 365 días (RETENCION_DIAS) | Agentes con sesión iniciada |
+| Fecha de consentimiento | Sí | Acceso restringido | Casilla del formulario público | Tabla solicitudes, columna consentimiento_en | No | Hasta 365 días (RETENCION_DIAS) | Agentes con sesión iniciada |
 | Categoría sugerida por la IA | No | No aplica | Respuesta del modelo, validada | Tabla solicitudes, columna categoria_sugerida | No | Hasta 365 días (RETENCION_DIAS) | Agentes con sesión iniciada |
 | Borrador sugerido por la IA | Sí | Acceso restringido | Respuesta del modelo, validada | Tabla solicitudes, columna borrador_sugerido | No | Hasta 365 días (RETENCION_DIAS) | Agentes con sesión iniciada |
 | Respuesta final aprobada | Sí | Acceso restringido | Escrita y aprobada por un agente | Tabla solicitudes, columna respuesta_final | No | Hasta 365 días (RETENCION_DIAS) | Agentes con sesión iniciada |

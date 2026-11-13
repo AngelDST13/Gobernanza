@@ -128,7 +128,7 @@ test('la bandeja exige sesión', async () => {
 
 let idSolicitud
 test('cualquier cliente puede enviar una solicitud y queda pendiente con sugerencia', async () => {
-  const r = await llamar('POST', '/api/solicitudes', { cuerpo: { nombre: 'Luis', correo: 'luis@cliente.com', mensaje: 'Me cobraron dos veces la factura de mayo' } })
+  const r = await llamar('POST', '/api/solicitudes', { cuerpo: { nombre: 'Luis', correo: 'luis@cliente.com', mensaje: 'Me cobraron dos veces la factura de mayo', consentimiento: 'on' } })
   assert.equal(r.status, 201)
   assert.equal(r.datos.estado, 'pendiente')
   idSolicitud = r.datos.id
@@ -137,6 +137,13 @@ test('cualquier cliente puede enviar una solicitud y queda pendiente con sugeren
   const fila = lista.datos.datos.find((s) => s.id === idSolicitud)
   assert.equal(fila.estado, 'pendiente')
   assert.equal(fila.categoria_sugerida, 'facturacion')
+})
+
+test('sin consentimiento informado el mensaje no se guarda, aunque los demás datos sean válidos', async () => {
+  const sinCasilla = await llamar('POST', '/api/solicitudes', { cuerpo: { nombre: 'Ana', correo: 'ana@ejemplo.com', mensaje: 'Consulta sobre la factura' } })
+  assert.equal(sinCasilla.status, 400)
+  const casillaFalsa = await llamar('POST', '/api/solicitudes', { cuerpo: { nombre: 'Ana', correo: 'ana@ejemplo.com', mensaje: 'Consulta sobre la factura', consentimiento: 'no' } })
+  assert.equal(casillaFalsa.status, 400)
 })
 
 test('una solicitud con datos inválidos se rechaza', async () => {
@@ -206,7 +213,7 @@ test('la lista está paginada y acepta filtros, con límite máximo', async () =
 
   // Datos inventados: 25 solicitudes.
   for (let i = 1; i <= 25; i++) {
-    await llamar('POST', '/api/solicitudes', { cuerpo: { nombre: `Cliente ${i}`, correo: `cliente${i}@ejemplo.com`, mensaje: `consulta número ${i} sobre el servicio` } })
+    await llamar('POST', '/api/solicitudes', { cuerpo: { nombre: `Cliente ${i}`, correo: `cliente${i}@ejemplo.com`, mensaje: `consulta número ${i} sobre el servicio`, consentimiento: 'on' } })
   }
   const pag1 = await llamar('GET', '/api/solicitudes?limite=10', { token })
   assert.equal(pag1.status, 200)

@@ -29,9 +29,11 @@ export const vistaPublica = () => {
       campo('Nombre', crear('input', { name: 'nombre', required: true, minLength: 2, maxLength: 100, autocomplete: 'name' })),
       campo('Correo', crear('input', { name: 'correo', type: 'email', required: true, autocomplete: 'email' })),
       campo('Mensaje', crear('textarea', { name: 'mensaje', required: true, minLength: 5, maxLength: 2000, rows: 5 })),
+      crear('label', { class: 'consentimiento' }, [
+        crear('input', { type: 'checkbox', name: 'consentimiento', required: true }),
+        crear('span', {}, 'Acepto que guardemos mi nombre, correo y mensaje para responderme. Puedo pedir copia o borrado escribiendo a soporte.'),
+      ]),
       crear('button', { type: 'submit', class: 'boton' }, 'Enviar'),
     ]),
-    crear('p', { class: 'nota' },
-      'Al enviar aceptas que guardemos tu nombre, correo y mensaje para responderte. Puedes pedir copia o borrado escribiendo a soporte.'),
   ])
 }

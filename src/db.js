@@ -37,7 +37,8 @@ export const abrirBase = (ruta = ':memory:') => {
       respuesta_final TEXT,
       aprobado_por INTEGER REFERENCES usuarios(id),
       creado_en TEXT NOT NULL,
-      respondida_en TEXT
+      respondida_en TEXT,
+      consentimiento_en TEXT
     );
 
     CREATE TABLE IF NOT EXISTS registros_ia (
@@ -50,5 +51,8 @@ export const abrirBase = (ruta = ':memory:') => {
       creado_en TEXT NOT NULL
     );
   `)
+  // Bases creadas antes del consentimiento informado: agrega la columna si falta.
+  const columnas = db.prepare('PRAGMA table_info(solicitudes)').all().map((c) => c.name)
+  if (!columnas.includes('consentimiento_en')) db.exec('ALTER TABLE solicitudes ADD COLUMN consentimiento_en TEXT')
   return db
 }
