@@ -4,16 +4,10 @@ Al menos tres riesgos, cada uno con quién sale afectado y una mitigación que y
 
 | # | Riesgo | Quién sale afectado | Probabilidad (B/M/A) | Impacto (B/M/A) | Mitigación | Estado | Responsable |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| R1 | <riesgo concreto> | <personas u organización> | <B, M o A> | <B, M o A> | <qué lo previene o reduce> | <Hecho, En curso o Pendiente> | <nombre> |
-| R2 | <riesgo concreto> | <personas u organización> | <B, M o A> | <B, M o A> | <qué lo previene o reduce> | <Hecho, En curso o Pendiente> | <nombre> |
-| R3 | <riesgo concreto> | <personas u organización> | <B, M o A> | <B, M o A> | <qué lo previene o reduce> | <Hecho, En curso o Pendiente> | <nombre> |
-
-<!--
-Ejemplos de riesgos concretos (no genéricos como «hackeo»):
-- Un usuario sube un documento con instrucciones ocultas que manipulan al modelo (inyección de prompt, OWASP LLM01).
-- Datos personales terminan en los logs de errores que se envían a un servicio externo.
-- La factura del proveedor de IA se dispara por un bucle o por abuso de un usuario.
-- El agente de código borra o modifica datos de producción.
-
-Para cada riesgo pregúntense quién sale afectado, no solo qué se rompe.
--->
+| R1 | Un cliente escribe instrucciones ocultas en su mensaje para manipular al modelo (inyección de prompt, OWASP LLM01) | Clientes que reciben un borrador manipulado; la empresa | M | A | El mensaje se envuelve en una etiqueta de datos y el prompt de sistema lo declara dato; la salida se valida con lista cerrada de categorías y largo máximo; ningún texto de la IA llega al cliente sin aprobación humana | En curso | Angel, dueño del proyecto |
+| R2 | Correos, teléfonos o datos sensibles del mensaje salen al proveedor de IA | Clientes cuyos datos se envían a un tercero | M | A | Se reemplazan correos y teléfonos antes de enviar; nombre y correo nunca salen; prueba automática que comprueba la redacción. Pendiente: redactar nombres y datos de salud | En curso | Angel, dueño del proyecto |
+| R3 | Un agente aprueba una respuesta sin leer el borrador y la empresa promete algo falso (caso Air Canada, 2024) | Clientes que reciben una promesa equivocada; la empresa | M | A | La API exige sesión de agente y texto de 5 a 4000 caracteres; la interfaz precarga el borrador para revisarlo. Pendiente: que la API registre que el borrador fue visto | En curso | Angel, dueño del proyecto |
+| R4 | Alguien entra a la bandeja con una cuenta de agente ajena por fuerza bruta de la clave | Clientes cuyos mensajes y correos quedan expuestos | B | A | Registro solo con código; claves con scrypt y mínimo 10 caracteres; sesiones de 8 horas con token hasheado. Pendiente: límite de intentos fallidos de inicio de sesión | Pendiente | Angel, dueño del proyecto |
+| R5 | Abuso del formulario público: envíos masivos que disparan el costo de la API de IA o saturan el servidor | La empresa (factura del proveedor); otros clientes (servicio lento) | M | M | Mensaje de máximo 2000 caracteres; llamada a la IA con tiempo máximo de 15 segundos; sin clave, no hay costo. Pendiente: límite de envíos por dirección | Pendiente | Angel, dueño del proyecto |
+| R6 | Pérdida de la base SQLite por falla del disco del servidor, sin copia de respaldo | Clientes y agentes cuyos datos se pierden | B | A | Pendiente: copia de respaldo diaria del archivo de datos fuera del servidor | Pendiente | Angel, dueño del proyecto |
+| R7 | La retención queda incompleta: los registros de IA y las cuentas de agentes nunca se borran | Agentes que dejan de trabajar; personas cuyos datos siguen en la base | M | B | La purga de solicitudes ya está en `src/solicitudes.js`. Pendiente: purgar `registros_ia` y dar de baja cuentas inactivas | Pendiente | Angel, dueño del proyecto |
