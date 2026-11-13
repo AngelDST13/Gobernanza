@@ -563,6 +563,51 @@ pre {
 }
 .inicio-pasos { display: none; }
 
+/* Animaciones de la propuesta ---------------------------------------------------- */
+/* Barra de progreso de lectura, arriba de todo */
+.progreso {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 50;
+  background: var(--acento); transform-origin: 0 50%; transform: scaleX(0);
+  pointer-events: none;
+}
+/* Fondo del inicio: un halo que deriva despacio y no tapa el texto */
+.portada { overflow: hidden; }
+.portada::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  width: min(560px, 90vw); aspect-ratio: 1; right: -18%; top: -30%;
+  background: radial-gradient(closest-side, var(--acento-suave), transparent 70%);
+  opacity: 0.9; animation: deriva 16s ease-in-out infinite alternate;
+}
+@keyframes deriva {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-40px, 30px, 0) scale(1.08); }
+}
+/* Brillo que cruza el botón principal al pasar el cursor */
+.btn { position: relative; overflow: hidden; isolation: isolate; }
+.btn::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.22) 50%, transparent 65%);
+  transform: translateX(-120%); transition: transform 700ms cubic-bezier(.2,.7,.2,1);
+}
+.btn:hover::after { transform: translateX(120%); }
+/* Pendientes: el ícono respira suavemente para llamar la atención */
+.checklist li:not(.hecho) .checklist-icono .icono { animation: respira 2.6s ease-in-out infinite; }
+@keyframes respira { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+/* Checklist: cada punto entra de izquierda a derecha al revelarse */
+.js .visible .checklist li { animation: entra-lado 560ms cubic-bezier(.2,.7,.2,1) both; }
+.js .visible .checklist li:nth-child(2) { animation-delay: 90ms; }
+.js .visible .checklist li:nth-child(3) { animation-delay: 180ms; }
+.js .visible .checklist li:nth-child(4) { animation-delay: 270ms; }
+.js .visible .checklist li:nth-child(5) { animation-delay: 360ms; }
+.js .visible .checklist li:nth-child(6) { animation-delay: 450ms; }
+.js .visible .checklist li:nth-child(7) { animation-delay: 540ms; }
+.js .visible .checklist li:nth-child(8) { animation-delay: 630ms; }
+.js .visible .checklist li:nth-child(9) { animation-delay: 720ms; }
+@keyframes entra-lado {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: none; }
+}
+
 /* Movimiento reducido: sin animaciones ni transiciones */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -1078,6 +1123,14 @@ pre {
     temaActual = TEMAS[(i + 1) % TEMAS.length].id;
     aplicarTema(temaActual);
     try { localStorage.setItem(TEMA_KEY, temaActual); } catch { /* sin almacenamiento */ }
+    // El ícono del tema gira al cambiar; sin movimiento, no se anima.
+    const icono = document.querySelector('#tema .icono');
+    if (icono && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      icono.animate(
+        [{ transform: 'rotate(-120deg) scale(0.6)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+        { duration: 420, easing: 'cubic-bezier(.2,.7,.2,1)' },
+      );
+    }
   });
 
   // Activa el revelado al bajar. Sin JavaScript, todo el contenido ya es visible.
@@ -1101,6 +1154,21 @@ pre {
   };
 
   const iniciarEfectos = () => {
+    // Barra de progreso: refleja cuánto de la página se ha leído.
+    const progreso = h('div', { class: 'progreso', 'aria-hidden': 'true' });
+    document.body.append(progreso);
+    const medirLectura = () => {
+      const recorrido = document.documentElement.scrollHeight - window.innerHeight;
+      progreso.style.transform = `scaleX(${recorrido > 0 ? Math.min(1, window.scrollY / recorrido) : 0})`;
+    };
+    let pendiente = false;
+    window.addEventListener('scroll', () => {
+      if (pendiente) return;
+      pendiente = true;
+      requestAnimationFrame(() => { pendiente = false; medirLectura(); });
+    }, { passive: true });
+    medirLectura();
+
     const bloques = document.querySelectorAll('[data-revelar]');
     const mostrar = (el) => {
       el.classList.add('visible');
