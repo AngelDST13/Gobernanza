@@ -134,7 +134,7 @@ test('cualquier cliente puede enviar una solicitud y queda pendiente con sugeren
   idSolicitud = r.datos.id
 
   const lista = await llamar('GET', '/api/solicitudes', { token: tokenAgente })
-  const fila = lista.datos.find((s) => s.id === idSolicitud)
+  const fila = lista.datos.datos.find((s) => s.id === idSolicitud)
   assert.equal(fila.estado, 'pendiente')
   assert.equal(fila.categoria_sugerida, 'facturacion')
 })
@@ -185,4 +185,55 @@ test('rutas desconocidas y archivos fuera de public/ no se sirven', async () => 
   assert.equal((await llamar('GET', '/api/no-existe')).status, 404)
   const archivo = await fetch(`${base}/src/auth.js`)
   assert.equal(archivo.status, 404)
+})
+
+test('se sirven archivos de subcarpetas de public/ y no se escapa de public/', async () => {
+  const js = await fetch(`${base}/js/main.js`)
+  assert.equal(js.status, 200)
+  assert.match(js.headers.get('content-type'), /javascript/)
+
+  for (const ruta of ['/js/../../package.json', '/%2e%2e/package.json', '/js/%2e%2e/%2e%2e/package.json', '/%E0%A4%A']) {
+    const r = await fetch(base + ruta)
+    assert.equal(r.status, 404, `no debe servir ${ruta}`)
+  }
+})
+
+// ---------- Lista paginada, filtro y búsqueda ----------
+
+test('la lista está paginada y acepta filtros, con límite máximo', async () => {
+  const sesion = await llamar('POST', '/api/auth/login', { cuerpo: { correo: 'agente@ejemplo.com', clave: CLAVE } })
+  const token = sesion.datos.token
+
+  // Datos inventados: 25 solicitudes.
+  for (let i = 1; i <= 25; i++) {
+    await llamar('POST', '/api/solicitudes', { cuerpo: { nombre: `Cliente ${i}`, correo: `cliente${i}@ejemplo.com`, mensaje: `consulta número ${i} sobre el servicio` } })
+  }
+  const pag1 = await llamar('GET', '/api/solicitudes?limite=10', { token })
+  assert.equal(pag1.status, 200)
+  assert.equal(pag1.datos.datos.length, 10)
+  assert.equal(pag1.datos.total, 25)
+  assert.equal(pag1.datos.paginas, 3)
+
+  const pag3 = await llamar('GET', '/api/solicitudes?limite=10&pagina=3', { token })
+  assert.equal(pag3.datos.datos.length, 5)
+
+  const grande = await llamar('GET', '/api/solicitudes?limite=500', { token })
+  assert.equal(grande.status, 400)
+
+  const pendientes = await llamar('GET', '/api/solicitudes?estado=pendiente&limite=50', { token })
+  assert.ok(pendientes.datos.datos.every((s) => s.estado === 'pendiente'))
+
+  const malo = await llamar('GET', '/api/solicitudes?estado=borrada', { token })
+  assert.equal(malo.status, 400)
+})
+
+test('la búsqueda es literal: los comodines de LIKE no cambian el resultado', async () => {
+  const sesion = await llamar('POST', '/api/auth/login', { cuerpo: { correo: 'agente@ejemplo.com', clave: CLAVE } })
+  const token = sesion.datos.token
+
+  const porcentaje = await llamar('GET', '/api/solicitudes?q=%25&limite=50', { token })
+  assert.equal(porcentaje.datos.total, 0, 'el signo % no debe comportarse como comodín')
+
+  const cliente = await llamar('GET', '/api/solicitudes?q=cliente7%40&limite=50', { token })
+  assert.equal(cliente.datos.total, 1)
 })

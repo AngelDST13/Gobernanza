@@ -1,0 +1,201 @@
+/* Tokens de color. Se redefinen para modo oscuro por preferencia del sistema o por data-theme. */
+:root {
+  --fondo: #f7f7f5;
+  --superficie: #ffffff;
+  --texto: #1d1d1b;
+  --texto-suave: #5a5a55;
+  --borde: #c9c9c4;
+  --acento: #2d5b8a;
+  --acento-texto: #ffffff;
+  --peligro: #9b2c2c;
+  --exito: #276749;
+  --radio: 8px;
+  --espacio: 16px;
+  --ancho-max: 880px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: #161816;
+    --superficie: #1f221f;
+    --texto: #ecece8;
+    --texto-suave: #a8a8a2;
+    --borde: #3b3d3a;
+    --acento: #8fb8e0;
+    --acento-texto: #101410;
+    --peligro: #f08a8a;
+    --exito: #9ad7b0;
+  }
+}
+
+:root[data-theme="dark"] {
+  --fondo: #161816;
+  --superficie: #1f221f;
+  --texto: #ecece8;
+  --texto-suave: #a8a8a2;
+  --borde: #3b3d3a;
+  --acento: #8fb8e0;
+  --acento-texto: #101410;
+  --peligro: #f08a8a;
+  --exito: #9ad7b0;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+h1, h2, h3 { line-height: 1.2; margin: 0 0 var(--espacio); }
+h1 { font-size: 1.25rem; margin: 0; }
+h2 { font-size: 1.4rem; }
+p { margin: 0 0 var(--espacio); overflow-wrap: anywhere; }
+
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho-max);
+  margin: 0 auto;
+  padding: var(--espacio);
+}
+
+.saltar {
+  position: absolute;
+  left: -9999px;
+}
+.saltar:focus {
+  left: var(--espacio);
+  top: var(--espacio);
+  background: var(--acento);
+  color: var(--acento-texto);
+  padding: 8px 12px;
+  border-radius: var(--radio);
+  z-index: 10;
+}
+
+:focus-visible {
+  outline: 3px solid var(--acento);
+  outline-offset: 2px;
+}
+
+main:focus { outline: none; }
+
+.cabecera {
+  border-bottom: 1px solid var(--borde);
+  background: var(--superficie);
+}
+.cabecera-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.navegacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.enlace {
+  color: var(--acento);
+  text-decoration: none;
+  padding: 4px 0;
+}
+.enlace[aria-current="page"] {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.usuario { color: var(--texto-suave); font-size: 0.95rem; }
+
+.vista { padding: 8px 0 24px; }
+
+.nota { color: var(--texto-suave); font-size: 0.9rem; }
+
+.pie { border-top: 1px solid var(--borde); margin-top: auto; }
+
+/* Formularios */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 560px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 500;
+}
+
+input, textarea, select, button {
+  font: inherit;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 10px 12px;
+  max-width: 100%;
+  min-height: 44px; /* área táctil cómoda en teléfonos */
+}
+
+textarea { resize: vertical; min-height: 110px; }
+
+button {
+  cursor: pointer;
+}
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.boton {
+  background: var(--acento);
+  color: var(--acento-texto);
+  border-color: var(--acento);
+  font-weight: 600;
+  align-self: flex-start;
+  padding: 10px 16px;
+}
+
+.boton-secundario {
+  background: transparent;
+  color: var(--acento);
+  border-color: var(--acento);
+  padding: 8px 14px;
+}
+
+/* Aviso accesible: región con role="status" en index.html */
+.avisos {
+  position: fixed;
+  right: var(--espacio);
+  bottom: var(--espacio);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(360px, calc(100vw - 32px));
+  z-index: 20;
+}
+.aviso {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radio);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+}
+.aviso-ok { border-left: 4px solid var(--exito); }
+.aviso-error { border-left: 4px solid var(--peligro); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

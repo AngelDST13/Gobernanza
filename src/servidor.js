@@ -1,6 +1,6 @@
 import { createServer } from 'node:http'
 import { readFile } from 'node:fs/promises'
-import { join, extname, dirname } from 'node:path'
+import { join, extname, dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { registrarAgente, iniciarSesion, usuarioDesdeToken, cerrarSesion, ErrorApp } from './auth.js'
 import {
@@ -42,12 +42,24 @@ const responder = (res, status, cuerpo) => {
 }
 
 const servirArchivo = async (res, rutaPedida) => {
-  const nombre = rutaPedida === '/' ? 'index.html' : rutaPedida.slice(1)
-  // Solo archivos planos dentro de public/: se bloquean rutas con ".." o subcarpetas.
-  if (!/^[\w.-]+$/.test(nombre)) return responder(res, 404, { error: 'no encontrado' })
+  let relativa
   try {
-    const contenido = await readFile(join(CARPETA_PUBLICA, nombre))
-    res.writeHead(200, { 'content-type': TIPOS[extname(nombre)] ?? 'application/octet-stream' })
+    relativa = rutaPedida === '/' ? 'index.html' : decodeURIComponent(rutaPedida.slice(1))
+  } catch {
+    return responder(res, 404, { error: 'no encontrado' })
+  }
+  // Cada segmento debe ser un nombre simple: sin vacíos, sin "." ni ".." y sin caracteres raros.
+  const segmentos = relativa.split('/')
+  const valido = segmentos.every((segmento) => /^[\w.-]+$/.test(segmento) && segmento !== '.' && segmento !== '..')
+  if (!valido) return responder(res, 404, { error: 'no encontrado' })
+
+  // Segunda barrera: la ruta resuelta debe seguir dentro de public/.
+  const absoluta = resolve(CARPETA_PUBLICA, ...segmentos)
+  if (!absoluta.startsWith(CARPETA_PUBLICA + sep)) return responder(res, 404, { error: 'no encontrado' })
+
+  try {
+    const contenido = await readFile(absoluta)
+    res.writeHead(200, { 'content-type': TIPOS[extname(absoluta)] ?? 'application/octet-stream' })
     res.end(contenido)
   } catch {
     responder(res, 404, { error: 'no encontrado' })
@@ -80,9 +92,9 @@ export const crearServidor = (db, config = {}) => {
       cerrarSesion(db, tokenDe(req))
       return [200, { ok: true }]
     }],
-    ['GET', /^\/api\/solicitudes$/, async (req) => {
+    ['GET', /^\/api\/solicitudes$/, async (req, _coincide, url) => {
       exigirUsuario(req)
-      return [200, listarSolicitudes(db)]
+      return [200, listarSolicitudes(db, url.searchParams)]
     }],
     ['POST', /^\/api\/solicitudes$/, async (req) => {
       // Ruta pública: la usa el cliente desde el formulario.
@@ -114,7 +126,7 @@ export const crearServidor = (db, config = {}) => {
       for (const [metodo, patron, manejador] of rutas) {
         const coincide = url.pathname.match(patron)
         if (coincide && metodo === req.method) {
-          const [status, cuerpo] = await manejador(req, coincide)
+          const [status, cuerpo] = await manejador(req, coincide, url)
           return responder(res, status, cuerpo)
         }
       }

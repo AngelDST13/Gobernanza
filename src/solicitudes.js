@@ -36,12 +36,69 @@ export const crearSolicitud = async (db, datos, opciones = {}) => {
   return { id, estado: 'pendiente' }
 }
 
-export const listarSolicitudes = (db) =>
-  db.prepare(`
+const LIMITE_POR_DEFECTO = 20
+const LIMITE_MAXIMO = 50
+const ESTADOS_VALIDOS = ['pendiente', 'respondida']
+
+/** Lee un entero de la query string. Si no viene, usa el valor por defecto. */
+const enteroDeQuery = (valor, porDefecto, min, max, nombre) => {
+  if (valor === null || valor === '') return porDefecto
+  const numero = Number(valor)
+  if (!Number.isInteger(numero) || numero < min || numero > max) {
+    throw new ErrorApp(400, `${nombre} debe ser un entero entre ${min} y ${max}`)
+  }
+  return numero
+}
+
+// Escapa los comodines de LIKE para que la búsqueda sea literal.
+const escaparLike = (texto) => texto.replace(/[\\%_]/g, (caracter) => `\\${caracter}`)
+
+/**
+ * Lista paginada. Parámetros de la query: pagina, limite, estado, q.
+ * Devuelve { datos, pagina, limite, total, paginas }.
+ */
+export const listarSolicitudes = (db, parametros = new URLSearchParams()) => {
+  const pagina = enteroDeQuery(parametros.get('pagina'), 1, 1, 1_000_000, 'pagina')
+  const limite = enteroDeQuery(parametros.get('limite'), LIMITE_POR_DEFECTO, 1, LIMITE_MAXIMO, 'limite')
+
+  const estado = parametros.get('estado') || null
+  if (estado !== null && !ESTADOS_VALIDOS.includes(estado)) {
+    throw new ErrorApp(400, 'estado debe ser pendiente o respondida')
+  }
+
+  const q = (parametros.get('q') ?? '').trim()
+  if (q.length > 100) throw new ErrorApp(400, 'la búsqueda no puede pasar de 100 caracteres')
+
+  const condiciones = []
+  const valores = []
+  if (estado) {
+    condiciones.push('estado = ?')
+    valores.push(estado)
+  }
+  if (q) {
+    condiciones.push("(nombre LIKE ? ESCAPE '\\' OR correo LIKE ? ESCAPE '\\')")
+    const patron = `%${escaparLike(q)}%`
+    valores.push(patron, patron)
+  }
+  const where = condiciones.length ? `WHERE ${condiciones.join(' AND ')}` : ''
+
+  const { total } = db.prepare(`SELECT COUNT(*) AS total FROM solicitudes ${where}`).get(...valores)
+  const datos = db.prepare(`
     SELECT id, nombre, correo, mensaje, categoria_sugerida, borrador_sugerido,
            estado, respuesta_final, creado_en, respondida_en
-    FROM solicitudes ORDER BY creado_en DESC
-  `).all()
+    FROM solicitudes ${where}
+    ORDER BY creado_en DESC, id DESC
+    LIMIT ? OFFSET ?
+  `).all(...valores, limite, (pagina - 1) * limite)
+
+  return {
+    datos,
+    pagina,
+    limite,
+    total: Number(total),
+    paginas: Math.max(1, Math.ceil(Number(total) / limite)),
+  }
+}
 
 /**
  * Una persona aprueba la respuesta final. La respuesta es obligatoria:
